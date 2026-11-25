@@ -4,9 +4,7 @@ A campus sharing marketplace where students can **lend, rent, sell or give away*
 
 **Live app:** https://campus-share-bvs.netlify.app · **Code:** https://github.com/bvsrikesh/campus-share · **Submission:** [docs/SUBMISSION.md](docs/SUBMISSION.md) · **PDF:** [docs/CampusShare_Submission.pdf](docs/CampusShare_Submission.pdf) · **Deploy guide:** [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
 
-| Tests | Lighthouse (desktop) | Lighthouse (mobile) |
-|---|---|---|
-| 159/159 browser checks pass | Performance 100 · Accessibility 100 · Best practices 100 | Performance 98 · Accessibility 100 · Best practices 100 |
+**Tests:** 159/159 end-to-end browser checks pass. **Demo screenshots:** [docs/SUBMISSION.md#5-demo](docs/SUBMISSION.md#5-demo)
 
 ## Run it
 No install or build step. Open `index.html` in a browser (double-click works), or open the live link.

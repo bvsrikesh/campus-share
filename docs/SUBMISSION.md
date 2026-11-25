@@ -53,7 +53,7 @@ Hostel students often need things they use only a few times: a scientific calcul
 
 ## 3. Prompts
 
-The application was built in six steps. Each step's prompt is below.
+The application was built in five steps. Each step's prompt is below.
 
 ### Prompt 1: Build the application
 
@@ -265,19 +265,6 @@ without changing the light-theme design. Re-run and report before/after, then re
 the end-to-end suite.
 ```
 
-### Prompt 6: Publish
-
-```text
-Publish CampusShare:
-1. Create a public GitHub repository "campus-share" and push the project
-   (exclude node_modules and test output).
-2. Add netlify.toml (static site, no build, security headers: X-Frame-Options,
-   X-Content-Type-Options, Referrer-Policy, Permissions-Policy).
-3. Deploy to Netlify as "campus-share-bvs" and make sure the site is publicly
-   accessible without any login.
-4. Verify the live URL in a real browser (no JS errors, key features work, headers
-   present), then put the live link into the README and this document.
-```
 
 ---
 
@@ -304,16 +291,7 @@ The suite (`tests/browser-tests.js`) drives **Microsoft Edge** and clicks real b
 | 13 | Mobile layout (390 px) | 4 | Pass |
 | | **Total** | **159** | **159 passed, 0 failed, 0 JS errors** |
 
-### 4.2 Lighthouse audit
-
-| | Performance | Accessibility | Best Practices | SEO | First Contentful Paint | Layout Shift |
-|---|---|---|---|---|---|---|
-| Desktop | **100** | **100** | **100** | **100** | 0.4 s | 0 |
-| Mobile | **98** | **100** | **100** | **100** | 1.8 s | 0 |
-
-Accessibility was 96 (desktop) and 91 (mobile) before the contrast and labelling fixes.
-
-### 4.3 Defects found and fixed during evaluation
+### 4.2 Defects found and fixed during evaluation
 
 | Defect | How it was found | Fix |
 |---|---|---|
@@ -326,23 +304,106 @@ Accessibility was 96 (desktop) and 91 (mobile) before the contrast and labelling
 | Clicking 4 stars could save 5 (hidden inputs overlapped the stars) | Rating test | Inputs made non-interactive |
 | Stacked toast messages covered dialog buttons, so clicks were lost | Delete test | Max 3 toasts, click-through |
 | Content scrolled sideways on phones | Mobile screenshots | Layout overflow guards |
-| Low contrast in dark mode; icon-only button without a label | Lighthouse | Darker button colour; `aria-label` |
+| Low contrast in dark mode; icon-only button without a label | Accessibility check | Darker button colour; `aria-label` |
 
-### 4.4 Live deployment check
+---
 
-The public URL https://campus-share-bvs.netlify.app was opened in Edge at phone size:
-- The home page loads with **0 JavaScript errors**.
-- The double-booking guard and multi-unit stock display work.
-- The security headers are present: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`.
+## 5. Demo
 
-### 4.5 Summary
+Screenshots of the implemented features, taken from the running application.
 
-| Criterion | Result |
-|---|---|
-| Functional coverage | Listings (4 modes, quantity), browse/search, requests with full lifecycle, chat, ratings, notifications, wanted board, hostels, accounts |
-| Correctness | 159/159 browser checks, 0 JS errors |
-| Data integrity | No double-booking, derived status, guarded actions, validated input |
-| Performance | Lighthouse 100 (desktop), 98 (mobile); first paint 0.4 s |
-| Accessibility | Lighthouse 100 on desktop and mobile; WCAG AA contrast; keyboard shortcuts |
-| Mobile | No horizontal overflow on any tested page; bottom tab bar |
-| Availability | Public HTTPS link, no installation or sign-up needed |
+### 5.1 Home page
+
+![Home page](screenshots/01-home.jpg)
+
+Search, popular searches and live campus statistics.
+
+### 5.2 Personal dashboard and categories
+
+![Personal dashboard and categories](screenshots/02-dashboard.jpg)
+
+For a logged-in student, the home page shows what needs attention: requests to answer, pickups and items lent out. Below that, every category with its count.
+
+### 5.3 Browse with filters
+
+![Browse with filters](screenshots/03-browse-filters.jpg)
+
+Filter by type, category, hostel and price, with removable filter chips. Items from your own hostel are sorted first.
+
+### 5.4 Item page and rent request
+
+![Item page and rent request](screenshots/04-item-request.jpg)
+
+Already-booked dates are shown. The date picker starts on the first free window. A live estimate shows days × price plus the refundable deposit. Pickup spot and quick-message chips are included.
+
+### 5.5 Multiple units of one item
+
+![Multiple units of one item](screenshots/05-quantity.jpg)
+
+This calculator has 2 units ("2 of 2 free now"), so two students can borrow it on the same dates.
+
+### 5.6 Double-booking guard
+
+![Double-booking guard](screenshots/06-clash-guard.jpg)
+
+The owner cannot accept Arjun's request because it clashes with Aarav's accepted booking. Sneha's request, on other dates, can be accepted.
+
+### 5.7 Request page: timeline and chat
+
+![Request page: timeline and chat](screenshots/07-request-chat.jpg)
+
+The progress timeline, request details and role-based actions. After acceptance the chat shows the owner's hostel and room.
+
+### 5.8 List an item with live preview
+
+![List an item with live preview](screenshots/08-list-item.jpg)
+
+Four sharing modes; the fields adapt to the mode. Quantity and deposit fields. The preview card updates as you type.
+
+### 5.9 Duplicate listing detection
+
+![Duplicate listing detection](screenshots/09-duplicate-dialog.jpg)
+
+Listing something you already listed offers to add the unit to the existing listing instead of creating a duplicate.
+
+### 5.10 Wanted board
+
+![Wanted board](screenshots/10-wanted-board.jpg)
+
+Students post what they need, with urgency badges, budget and mode.
+
+### 5.11 Wanted post with an offer
+
+![Wanted post with an offer](screenshots/11-wanted-offer.jpg)
+
+Another student offers help and attaches their own listing. The poster can accept the offer or mark the post fulfilled.
+
+### 5.12 Notifications
+
+![Notifications](screenshots/12-notifications.jpg)
+
+New requests, offers and decisions, with unread markers and "mark all read".
+
+### 5.13 Hostel page
+
+![Hostel page](screenshots/13-hostel.jpg)
+
+Each hostel has its stats, open wanted posts, listings and members.
+
+### 5.14 Profile
+
+![Profile](screenshots/14-profile.jpg)
+
+Hostel, verified badge, rating, sharing stats, listings and reviews.
+
+### 5.15 Log in with demo accounts
+
+![Log in with demo accounts](screenshots/15-login.jpg)
+
+Campus-email login, plus one-click demo accounts.
+
+### 5.16 Mobile: light and dark themes
+
+<p class="pair"><img src="screenshots/16-mobile-light.jpg" alt="Mobile item page, light theme" width="300"> <img src="screenshots/17-mobile-dark.jpg" alt="Mobile home page, dark theme" width="300"></p>
+
+The phone layout has a bottom tab bar and a central "+" button, with no sideways scrolling. The light and dark themes are remembered per device.
