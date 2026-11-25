@@ -1,0 +1,13 @@
+# Netlify configuration: CampusShare is a static site with no build step.
+[build]
+  publish = "."
+  command = ""
+
+# Basic security headers for every page
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"

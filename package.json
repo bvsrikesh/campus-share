@@ -1,0 +1,12 @@
+{
+  "name": "campus-share",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CampusShare demo prototype",
+  "scripts": {
+    "test": "node tests/browser-tests.js"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^25.19.0"
+  }
+}
