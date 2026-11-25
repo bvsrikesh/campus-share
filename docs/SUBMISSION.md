@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Student** | TODO: name, roll number |
-| **App link** | TODO: `https://<site-name>.netlify.app` (see [DEPLOYMENT.md](DEPLOYMENT.md)) |
+| **App link** | **https://campus-share-bvs.netlify.app** |
 | **Source code** | https://github.com/bvsrikesh/campus-share |
 | **Prompt log** | [PROMPTS.md](PROMPTS.md) |
 | **Date** | 26 November 2026 |
@@ -209,7 +209,7 @@ Before the fixes, Accessibility was 96 (desktop) and 91 (mobile).
 
 ## 10. Running it
 
-- **Online:** open the app link at the top.
+- **Online:** https://campus-share-bvs.netlify.app
 - **Locally:** open `index.html` in any browser, or run `npx serve .`.
 - **Tests:** `npm install`, then `npm test` (needs Microsoft Edge; set `BROWSER` to use Chrome).
 - **Demo tip:** in the top banner, pick **Kabir Singh** → Requests to see the double-booking guard. Pick **Rohan Verma** → his calculator listing to see quantity (2 units).

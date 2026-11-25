@@ -2,7 +2,7 @@
 
 A campus sharing marketplace where students can **lend, rent, sell or give away** items across hostels, and post **wanted requests** for things they need.
 
-**Live app:** TODO `https://<site-name>.netlify.app` · **Submission:** [docs/SUBMISSION.md](docs/SUBMISSION.md) · **Prompt log:** [docs/PROMPTS.md](docs/PROMPTS.md) · **Deploy guide:** [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
+**Live app:** https://campus-share-bvs.netlify.app · **Code:** https://github.com/bvsrikesh/campus-share · **Submission:** [docs/SUBMISSION.md](docs/SUBMISSION.md) · **Prompt log:** [docs/PROMPTS.md](docs/PROMPTS.md) · **Deploy guide:** [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
 
 | Tests | Lighthouse (desktop) | Lighthouse (mobile) |
 |---|---|---|

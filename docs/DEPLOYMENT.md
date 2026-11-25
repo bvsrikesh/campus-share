@@ -1,5 +1,17 @@
 # Deploying CampusShare (GitHub + Netlify)
 
+## Current deployment
+
+| | |
+|---|---|
+| **Live app** | https://campus-share-bvs.netlify.app (public, HTTPS, security headers from `netlify.toml`) |
+| **Source** | https://github.com/bvsrikesh/campus-share (public) |
+| **Deploy method** | Netlify CLI production deploy of the app files (`index.html`, `css/`, `js/`, `docs/`) |
+| **Access** | Netlify's team-login protection is turned **off** for this site, so anyone with the link can open it |
+| **Verified** | Live site loads in Edge with 0 JS errors; double-booking guard, quantity display and docs checked on the live URL |
+
+**To redeploy after changes,** either connect the repository (Option A below: every `git push` then redeploys), or run `netlify deploy --prod --dir .` from a folder containing only the app files.
+
 ## What Netlify is
 
 [Netlify](https://www.netlify.com) is a free hosting service for websites made of static files (HTML, CSS, JS), like CampusShare. You give it the project folder, or connect a GitHub repository. It serves the site at a public link such as `https://campus-share.netlify.app`, with HTTPS. **Anyone with the link can open the app** on any phone or laptop. They don't need an account or any installation.
