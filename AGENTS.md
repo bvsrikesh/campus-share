@@ -20,7 +20,6 @@ CampusShare is a zero-build static web app (HTML, CSS, vanilla JS) where hostel 
 
 - Add or update a check in `tests/browser-tests.js` first, then make it pass. Run `npm test` (Microsoft Edge required) and read the result. Use `ONLY=<group number> npm test` for one group.
 - When a check fails, decide whether the bug is in the test harness or in the app **before** editing anything. Never weaken an assertion to get a green run.
-- Record each significant AI-assisted task in `docs/PROMPTS.md`: the prompt, what was produced, how it was verified, and its limitations.
 - Update the docs that describe changed behaviour in the same commit. Write TODO for anything unknown; never claim a result that was not produced.
 
 ## Map

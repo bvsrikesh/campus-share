@@ -1,215 +1,348 @@
-# CampusShare: borrow, lend and share across campus hostels
+# CampusShare
 
-**CS5013 Programming with AI, project submission**
+**Borrow, lend, rent and share everyday items across campus hostels**
 
 | | |
 |---|---|
-| **Student** | TODO: name, roll number |
-| **App link** | **https://campus-share-bvs.netlify.app** |
+| **App link** | https://campus-share-bvs.netlify.app |
 | **Source code** | https://github.com/bvsrikesh/campus-share |
-| **Prompt log** | [PROMPTS.md](PROMPTS.md) |
-| **Date** | 26 November 2026 |
+| **Submitted by** | TODO: name, roll number |
 
 ---
 
-## 1. Problem statement
+## 1. Problem Statement
 
-Hostel students often need things they use only a few times: a scientific calculator for one exam, a blazer for a placement interview, a cycle for a week, an extension board, a lab coat. Buying each one is wasteful. The same items are usually lying unused a few rooms away. Students currently find them through scattered WhatsApp groups, where messages get buried and nobody can tell what is available. There is no record of who has what, and no way to stop two people being promised the same item.
+Hostel students often need things they use only a few times: a scientific calculator for one exam, a blazer for a placement interview, a cycle for a week, an extension board or a lab coat. Buying each one is wasteful, while the same items lie unused a few rooms away. Today students find them through scattered chat groups. Messages get buried, nobody can see what is available, and nothing stops two people being promised the same item.
 
-**Goal.** Build a campus sharing platform where students can:
+**Objective.** Build a campus sharing platform where students can:
 
-1. **List** items to lend (free), rent (per day), sell, or give away.
-2. **Browse and search** items across all hostels, nearest hostel first.
-3. **Request** an item with dates, pickup spot and a message. Then follow the request through accept → hand-over → return, with chat and ratings.
+1. **List** items to lend (free), rent (per day), sell or give away, with quantity, condition, deposit and lending limits.
+2. **Browse and search** items across all hostels, with items from their own hostel shown first.
+3. **Request** an item with dates, pickup spot and a message. Track the request from accept to hand-over to return, with chat, notifications and ratings.
 4. **Post what they need** on a Wanted board when nobody has listed it yet.
-5. See **hostels** as communities, and manage their own **account**, listings and requests.
+5. Use **hostels** as communities, and manage their own **account**, listings and requests.
 
-The deliverable is a working, demo-ready prototype that a reviewer can open from a link and use from both sides of an exchange (owner and borrower).
+**Key requirements.**
+- **No double-booking**, including items with several units.
+- **Privacy:** a room number is revealed only after a request is accepted.
+- **Mobile-friendly and accessible.**
+- **Easy to demonstrate:** a reviewer can act as both owner and borrower with no setup.
 
----
-
-## 2. Solution overview
-
-A single-page web application in plain HTML, CSS and JavaScript. It has no framework and no build step. All data is stored in the browser.
-
-| Area | What the user can do |
-|---|---|
-| **Accounts** | Sign up with a campus email, log in, edit profile. Profiles show ratings, reviews and share statistics. A **"Viewing as" switcher** lets a reviewer jump between 10 demo students. |
-| **Listings** | Four sharing modes (Lend / Rent / Sell / Giveaway). Fields: price, refundable deposit, max lending period, condition, **quantity**, photo or icon. The form shows a live preview. Owners can edit, pause, relist or delete. |
-| **Browse** | Search, plus filters for category, type, hostel, max price and "available now". Sorting options: **nearest first** (your hostel), newest, or price. Saved items (♥). |
-| **Requesting** | The request form depends on the type: date range with a live cost estimate, an offer price for sale items, pickup spot, and quick-message chips. Already-booked dates are shown. The date picker defaults to the first free window. |
-| **Request lifecycle** | Pending → Accepted → Handed over → Returned, plus decline and cancel. Each request has its own chat. The room number is shown only after acceptance. Overdue warnings appear when needed. The borrower taps "I've returned it" and the owner confirms. Both sides rate each other. |
-| **Wanted board** | Post a need with a deadline, budget and mode. Others offer help and can attach one of their listings. The poster accepts an offer or closes the post. |
-| **Hostels** | Hostel directory with stats. Each hostel has its own page with its listings, wanted posts and members. |
-| **Notifications** | Bell with unread count. Notifications for new requests, decisions, messages, returns and matching listings. |
-| **Quality of life** | Dark mode, mobile bottom tab bar, `/` to search, `Esc` to close dialogs, toasts, empty states with a next action. |
-
-Demo data: 6 hostels, 10 students, 31 listings (including a 2-unit item and the same item from two owners), 8 wanted posts and 10 requests in every state.
+**Scope and assumptions.**
+- This is a working prototype; data is stored in each visitor's browser.
+- Sign-up is limited to campus emails.
+- Payments and deposits are settled in person at pickup.
+- Bookings are by whole days, at most 6 months ahead.
+- All people, hostels and listings in the demo are fictional.
 
 ---
 
-## 3. Design decisions and their merits
+## 2. App Link
 
-| Decision | Why | Merit | Trade-off accepted |
+**Live app:** https://campus-share-bvs.netlify.app. It opens on any phone or laptop with no sign-up needed.
+
+**Source code:** https://github.com/bvsrikesh/campus-share
+
+**How to try it**
+1. Use the **"Viewing as"** dropdown in the top banner to switch between 10 demo students. Password for all accounts: `demo123`.
+2. As **Kabir Singh**, open **Requests**: one request clashes with an existing booking, so Accept is blocked.
+3. As **Rohan Verma**, open the **Casio calculator**: it has 2 units, so two people can borrow it at once.
+4. **Reset** in the banner restores the demo data at any time.
+
+---
+
+## 3. Prompts
+
+The application was built in six steps. Each step's prompt is below.
+
+### Prompt 1: Build the application
+
+```text
+Build "CampusShare", a web application where hostel students borrow, lend, rent,
+sell and give away everyday items (calculators, cycles, lab coats, notes, formal
+wear, kitchen items) instead of buying them for one-time use.
+
+TECH
+- Plain HTML + CSS + vanilla JavaScript. No framework, no build step: the app must
+  open by double-clicking index.html and must deploy as static files.
+- Hash-based routing (#/browse, #/item/<id>, ...) so every screen has a shareable
+  URL and back/forward works.
+- Store all data in localStorage. Seed realistic, fictional demo data on first load.
+- Files: index.html, css/styles.css, js/data.js (constants + seed), js/app.js
+  (store, router, pages, actions), README.md.
+
+DATA MODEL
+- hostels: id, name, short name, type (Boys/Girls/Co-ed PG), blocks, capacity,
+  colour, emoji, description. Seed 6.
+- users: id, name, campus email, password, hostelId, room, department, year, bio,
+  avatar colour, joined date, saved item ids. Seed 10.
+- items: id, ownerId, hostelId, title, category, type (lend | rent | sell | free),
+  price (rent = per day), refundable deposit, max lending days, condition,
+  description, emoji or uploaded photo, status, views, created date. Seed ~30.
+- requests: id, itemId, requesterId, ownerId, type, status, from/to dates (lend/rent),
+  offer price (sell), pickup spot, messages[], status history, created/updated.
+- wanted posts: id, userId, hostelId, title, category, mode (borrow/rent/buy/any),
+  budget, needed-by date, description, status, offers[].
+- reviews (1-5 stars + text) and notifications (text, link, read flag).
+- 11 categories (Books & Notes, Electronics, Lab Gear, Stationery & Tools, Sports,
+  Kitchen, Cycles & Travel, Room & Furniture, Formals & Fest, Music & Games, Other).
+
+PAGES
+1. Home: hero with search and popular searches; live stats; "needs your
+   attention" cards for the logged-in user (requests to answer, pickups, returns
+   due); category tiles with counts; items in your hostel; fresh listings; urgent
+   wanted posts; hostel strip; "how it works" for visitors.
+2. Browse: search, filters (type, category, hostel, max price, available now),
+   active-filter chips, sort (nearest first = viewer's hostel, newest, price).
+   Empty search result offers "post this as a wanted request".
+3. Item page: large image, type badge, price, description, facts (condition, max
+   period, deposit, pickup hostel), owner card with rating, similar items.
+   The side panel depends on the viewer:
+   - visitor: log-in prompt;
+   - owner: edit / pause / relist / delete, and the item's requests with quick
+     Accept/Decline;
+   - other user: the request form.
+4. Request form:
+   - lend/rent: date range with live cost estimate (days x price + deposit);
+   - sell: an offer price;
+   - every type: pickup spot select, message with quick-message chips.
+5. Request page: status timeline (Requested -> Accepted -> Handed over -> Returned),
+   details, role-based action buttons, chat, the other person's profile card, safety
+   tips. Show the other person's room number only after acceptance.
+6. Requests: Received / Sent tabs, status filters, inline Accept/Decline.
+7. List an item / Edit: type selector cards, fields that adapt to the type, photo upload
+   (resize to 640px JPEG) or emoji picker, live preview card, tips.
+8. Wanted board: post a need (modal), filter, urgency badges (today / tomorrow /
+   in N days); detail page with offers (others can attach one of their listings),
+   accept an offer, mark fulfilled, reopen.
+9. Hostels directory and hostel page (stats, wanted posts, listings, members).
+10. Profile: cover, details, stats (rating, listings, lent, borrowed), listings,
+    wanted posts, reviews; edit profile.
+11. Saved items, Log in (with one-click demo accounts), Sign up (campus email only).
+
+REQUEST LIFECYCLE
+pending -> accepted (owner) -> active / handed over (owner) -> completed (owner
+confirms return); pending -> declined (owner); pending/accepted -> cancelled (either
+side). For sell/giveaway the hand-over completes the exchange and marks the item
+sold/claimed. After completion both sides can rate each other once. Notify the other
+side of every change, every new request and every new message.
+
+UX
+- Header: logo, search, nav (Browse, Wanted, Hostels, Requests with badge), "List an
+  item", notification bell with dropdown, account menu.
+- Mobile: bottom tab bar with a central "+" button; no horizontal scrolling.
+- Light and dark themes (remember the choice). Toast messages. Empty states that
+  suggest the next action. Keyboard: "/" focuses search, Esc closes dialogs.
+- Escape every piece of user text before rendering it as HTML.
+```
+
+### Prompt 2: Booking integrity and a two-sided demo
+
+```text
+Improve CampusShare's request flow and demo experience.
+
+1. Prevent double-booking. For lend/rent items, an owner must not be able to accept a
+   request whose dates overlap an accepted or active booking. Instead of the Accept
+   button show a red label: "Clashes with <name>'s booking (<from> -> <to>)".
+   When a request is accepted, automatically decline the pending requests whose
+   dates overlap it and notify those requesters.
+2. On the item page show the already-booked date ranges, default the date picker
+   to the first free window, warn live when chosen dates overlap a booking, and
+   reject such a submission.
+3. Two-step return: the borrower can tap "I've returned it" (notifies the owner,
+   shows "waiting for confirmation"), then the owner confirms the return.
+4. Add an always-visible "Viewing as" dropdown in the top banner listing every demo
+   student plus "guest", and a Reset button, so one person can demo both sides of an
+   exchange. When switching from a private page (request, edit), go to Requests.
+5. Seed one pending request that clashes with an accepted booking and one that
+   doesn't, so the guard is visible in the demo. Bump the storage version so
+   existing browsers reload the seed.
+```
+
+### Prompt 3: Quantity, duplicates and consistency rules
+
+```text
+Make CampusShare's data impossible to get into an inconsistent state.
+
+QUANTITY
+- Add a quantity field (1-50) to listings. For lend/rent, a date range is full
+  only when, on some day in it, every unit is booked (count bookings per day).
+  For sell/giveaway, each completed hand-over uses one unit; the item becomes
+  Sold/Claimed when none are left; reservations (accepted requests) also hold units.
+- Show stock: "x2 - 1 of 2 free now" on cards and item pages.
+- Derive item status (available / on loan / sold / claimed) from the requests
+  after every change. Never set it by hand. Only paused/removed are manual.
+
+DUPLICATES
+- If a user lists a title they already have (case- and punctuation-insensitive),
+  show a dialog: "Add N to existing listing (-> total)" or "Post as a separate
+  listing". The same item from different owners stays as separate listings.
+
+GUARDS (re-check at the moment of the click, never trust the button on screen)
+- Every request action checks the user's role (owner/requester) and the request's
+  current status; otherwise show "That request has already changed" and refresh.
+  This must survive old tabs, double clicks and forged buttons.
+- Only owners manage their listings; only posters manage their wanted posts.
+- A second open request for the same item by the same person is rejected.
+- No accepting a request whose dates have passed.
+- Listings with open requests: no type change, no quantity below units already
+  committed, no max period shorter than an open request. No delete while on loan;
+  deleting cancels pending/accepted requests and notifies the requesters.
+
+VALIDATION
+- Titles of at least 3 characters; whitespace trimmed and collapsed.
+- Prices and deposits from 0 to Rs 1,00,000; rent and sell need a price.
+- Offers from Rs 1 to twice the asking price.
+- Dates: none in the past, end after start, at most 6 months ahead, within the
+  max lending period.
+- Sign-up: a valid campus email (campus.edu / .edu / .ac.in) that isn't already
+  used (case-insensitive), non-blank name/room/department, a password of 6+ characters.
+- Wanted posts: "needed by" not in the past.
+- One offer per person per wanted post; one rating per side per exchange.
+- When a user changes hostel, move their listings and open wanted posts with them.
+
+DEMO DATA
+- Give one calculator 2 units, and add the same calculator model from a second
+  owner. Bump the storage version.
+```
+
+### Prompt 4: End-to-end test suite in a real browser
+
+```text
+Write an end-to-end test suite for CampusShare using puppeteer-core with the
+installed Microsoft Edge (configurable to Chrome). `npm test` runs it.
+
+STRUCTURE
+- Groups; each group starts from fresh demo data, and every group also asserts
+  that no JavaScript error occurred in the page.
+- Helpers: navigate by hash, switch user through the "Viewing as" dropdown, fill
+  and submit forms, read the toast, read stored state from localStorage.
+- Print PASS/FAIL per check with details on failure; summary at the end; ONLY=<n>
+  runs a single group.
+
+GROUPS
+1. Every route renders for a guest and three different users; unknown URL shows
+   a 404; outsiders cannot open someone else's request.
+2. Accounts: wrong password, login redirect, session after reload, logout;
+   sign-up rejects non-campus, duplicate (any case), blank-name and malformed emails.
+3. Listing validation; listing the same title twice -> merge or separate;
+   the same object from two owners both appear in search; HTML in a title is shown
+   as text and never executed.
+4. Quantity: three borrowers ask for a 2-unit item on the same dates -> two accepted,
+   third auto-declined and notified; a fourth is blocked for those dates but can book
+   other dates; hand-overs move "1 of 2 free" -> "on loan" -> back to available.
+5. Single item: clash label, overlapping/past/reversed/too-long/far-future dates,
+   forced duplicate request, stale request with past dates.
+6. Sell/giveaway: offer limits (browser validation and app validation), reservation,
+   buyer backs out, sold out, relist; a 2-unit giveaway becomes claimed.
+7. Full lend lifecycle: notification -> chat -> room hidden then revealed ->
+   hand-over -> no delete while on loan -> two-step return -> ratings once only.
+8. Stale state: a second tab declines a request; the first tab refreshes and
+   rejects its old Accept; forged buttons for the wrong user; double-click Accept is
+   recorded once.
+9. Editing/deleting listings with open requests.
+10. Wanted board: validation, offers with attached listing, one offer per person,
+    accept -> fulfilled, reopen, "post this search as wanted".
+11. Profile (hostel change moves listings), saved items, notifications, guest heart.
+12. Filters, live search keeps focus, back/forward, "/" shortcut, theme persistence,
+    reset.
+13. Mobile 390px: no horizontal overflow on 12 pages, bottom bar, filter drawer.
+
+RULE
+When a check fails, first decide whether the bug is in the test or in the app.
+Fix the real cause; never weaken an assertion to get a green run.
+```
+
+### Prompt 5: Accessibility and performance audit
+
+```text
+Serve CampusShare locally and run Lighthouse with Edge in desktop and mobile
+modes. Report the Performance, Accessibility, Best Practices and SEO scores plus
+First Contentful Paint, Largest Contentful Paint, Total Blocking Time and
+Cumulative Layout Shift. List every failing audit with the exact element. Fix
+contrast and labelling problems so they meet WCAG AA in both light and dark themes,
+without changing the light-theme design. Re-run and report before/after, then re-run
+the end-to-end suite.
+```
+
+### Prompt 6: Publish
+
+```text
+Publish CampusShare:
+1. Create a public GitHub repository "campus-share" and push the project
+   (exclude node_modules and test output).
+2. Add netlify.toml (static site, no build, security headers: X-Frame-Options,
+   X-Content-Type-Options, Referrer-Policy, Permissions-Policy).
+3. Deploy to Netlify as "campus-share-bvs" and make sure the site is publicly
+   accessible without any login.
+4. Verify the live URL in a real browser (no JS errors, key features work, headers
+   present), then put the live link into the README and this document.
+```
+
+---
+
+## 4. Evaluations
+
+### 4.1 Automated end-to-end tests: 159 / 159 passed
+
+The suite (`tests/browser-tests.js`) drives **Microsoft Edge** and clicks real buttons. Every group also asserts **zero JavaScript errors**.
+
+| # | Group | Checks | Result |
 |---|---|---|---|
-| **Vanilla HTML/CSS/JS, no framework, no build** | The brief is a demo prototype that must open from a link or a double-click. | Opens anywhere with zero setup, loads in 0.4 s (Lighthouse 100), and every line is readable in a viva without framework knowledge. | Manual DOM rendering; it would need restructuring to grow into a large team project. |
-| **Hash routing (`#/item/i3`)** | Works on any static host and from `file://`. | Every screen has a shareable URL. Back/forward and refresh work, so no server rewrite rules are needed. | URLs contain `#`. |
-| **`localStorage` as the data store** | No backend fits the demo scope and needs no accounts or keys. | The demo works offline, costs nothing to host, and data survives reloads. Tabs stay in sync through the `storage` event. | Data is per browser, not shared between users. This is stated in the app banner and in the Assumptions. |
-| **Four sharing modes in one model** (`lend/rent/sell/free`) | Real campus needs cover all four. | One listing flow and one request lifecycle serve every case. Only the form fields and the final step differ. | Slightly more rules (e.g. dated vs. undated requests). |
-| **Item status is *derived*, never stored by hand** (`syncItemStatus`) | Hand-set status drifted from reality in early versions. | "Available / On loan / Sold" is always recomputed from the requests, so it can't contradict them. | Recomputed after every change; the cost is trivial at this scale. |
-| **Booking model with quantity** (`peakLoad`, `unitsLeft`) | Students own duplicates (two calculators), and double-booking was the main risk. | Dates count as full only when *every* unit is booked. Sale items sell out per unit, and conflicts are shown before the owner clicks. | Day-level granularity (no hours). |
-| **Every action re-validated** (`guardReq`, `ownItem`, `ownWanted`) | Stale tabs, double clicks and edited HTML can send old actions. | The state machine can't be pushed into an invalid state; tested with a second browser tab and forged buttons. | A few extra checks per click. |
-| **Privacy by default** | Room numbers are personal. | A room is revealed only after a request is accepted. All user text is HTML-escaped. | — |
-| **"Viewing as" switcher in the banner** | Reviewers must see both sides of an exchange. | One click shows owner and borrower views, so a two-sided demo can be done alone. | Demo-only; it would be removed in production. |
-| **Accessibility and mobile first-class** | Students mostly use phones. | Bottom tab bar, no sideways scrolling (tested on 12 pages), WCAG-AA contrast and keyboard shortcuts. Lighthouse Accessibility is 100. | — |
-| **Real-browser end-to-end tests** (puppeteer-core + Edge) | AI-written UI code must be checked running, not just read (L1 s35–36). | 159 checks click real buttons in a real browser. One command reruns everything after any change. | About 4 minutes per run; Edge or Chrome must be installed. |
+| 1 | Every page renders (28 routes × guest + 3 users, 404, access control) | 8 | Pass |
+| 2 | Accounts: login, logout, sign-up validation, protected pages | 15 | Pass |
+| 3 | Listing validation, duplicate listings, same item from two owners, HTML escaping | 14 | Pass |
+| 4 | Quantity: 3 borrowers for 2 units, auto-decline, stock status | 16 | Pass |
+| 5 | Single item: double-booking and date rules | 14 | Pass |
+| 6 | Sell/giveaway: offers, reservation, sold out, relist | 14 | Pass |
+| 7 | Full lifecycle: chat, privacy, hand-over, two-step return, ratings | 20 | Pass |
+| 8 | Stale tabs, wrong user, double clicks | 7 | Pass |
+| 9 | Editing/deleting listings with open requests | 13 | Pass |
+| 10 | Wanted board | 15 | Pass |
+| 11 | Profile, hostels, saved items, notifications | 9 | Pass |
+| 12 | Filters, search, navigation, theme, reset | 10 | Pass |
+| 13 | Mobile layout (390 px) | 4 | Pass |
+| | **Total** | **159** | **159 passed, 0 failed, 0 JS errors** |
 
----
+### 4.2 Lighthouse audit
 
-## 4. Assumptions
-
-1. **Scope is a prototype.** Data lives in each browser (`localStorage`). There is no server, so two people on different devices do not see each other's changes. Passwords are stored in plain text in the browser because the accounts are demo accounts.
-2. **Campus email = identity.** Sign-up accepts only `@campus.edu`, `*.edu` or `*.ac.in` addresses. Real email verification (OTP/SSO) is out of scope.
-3. **No online payments.** Rent, deposits and sale prices are settled in person at pickup, and the app shows this. Prices are in ₹ and capped at ₹1,00,000.
-4. **Day-level booking.** Loans are booked by whole days (inclusive), at most 6 months ahead, with a max period per listing (1–30 days).
-5. **Pickup happens on campus.** Pickup spots are a fixed list of common areas (hostel lobby, library, canteen, main gate…).
-6. **The owner's hostel is the item's location.** If a student changes hostel, their listings and open wanted posts move with them.
-7. **Trust comes from ratings.** One rating per side per completed exchange, 1–5 stars.
-8. **All people, hostels and listings in the demo are fictional.**
-
----
-
-## 5. Improvisations beyond the original brief
-
-The brief asked for listings, requests, items, accounts, hostels and requesting options. These additions came from design review and testing:
-
-| Improvisation | Trigger |
-|---|---|
-| **Wanted board**: request items nobody has listed. Includes "post this search as wanted" from an empty search, and notifications when a matching item is listed. | Requests should also work when no listing exists. |
-| **Double-booking prevention** with visible "Clashes with Aarav's booking" labels and auto-decline of clashing requests. | Design review: two requests for the same dates could both be accepted. |
-| **Two-step return** (borrower "I've returned it" → owner confirms). | Design review: either side should be able to start the return. |
-| **"Viewing as" demo switcher** always on screen. | Demo review: reviewers need to play both owner and borrower quickly. |
-| **Quantity / multiple units**, and the **duplicate-listing dialog** ("add 1 to existing → 3" or post separately). | Edge-case audit: "what if someone has 2 of the same item?" |
-| **Guards against stale tabs, double clicks and forged actions.** Rules for editing listings with open requests. No deleting an item while it is on loan. | Edge-case audit. |
-| **Privacy: room number shown only after acceptance.** | Safety review. |
-| **Accessibility fixes** (contrast, labels) and **click-through toasts**. | Lighthouse audit and the browser test suite (§6). |
-| **Dark mode, mobile tab bar, keyboard shortcuts, live listing preview.** | UX review. |
-
----
-
-## 6. Evaluation
-
-### 6.1 Automated end-to-end tests (real browser)
-
-`tests/browser-tests.js` drives **Microsoft Edge** with puppeteer-core. Run it with `npm test`. Each group starts from fresh demo data, and every group also asserts **"no JavaScript errors in the page"**.
-
-| # | Group | What is checked (examples) |
-|---|---|---|
-| 1 | Every page renders | 28 routes × (guest + 3 students). A 404 page is shown for unknown links. Outsiders cannot open someone else's request. |
-| 2 | Accounts | Wrong password, redirect after login, session survives reload. Signup rejects: non-campus email, duplicate email (any case or spacing), blank name, malformed email. |
-| 3 | Listing validation and duplicates | Title length, missing or negative price, prices above the cap, quantity 0 or 51. The same item twice gives a merge or post-separately dialog. The same object from two owners shows both. HTML in titles is shown as text. |
-| 4 | Quantity | 3 students ask for a 2-unit item on the same dates. Accept 2 → the 3rd is auto-declined and notified. A 4th is blocked for those dates but can book free ones. "1 of 2 free" → "on loan" → back to available. |
-| 5 | Single item: dates | Clash labels, overlapping, past, reversed, too-long and >6-month dates. A forced second request is blocked. A stale request with past dates can't be accepted. |
-| 6 | Sell and giveaway | Offer limits (browser *and* app), reservations, a buyer backing out, sold out → relist. Last unit of a 2-unit giveaway → "claimed", remaining requests declined. |
-| 7 | Full lifecycle | Notification → chat (Enter, blank ignored) → room hidden, then revealed → hand-over → no delete while on loan → two-step return → ratings (once only). |
-| 8 | Stale tabs and wrong person | A second tab declines a request; the first tab refreshes itself and rejects a stale Accept. The requester can't accept, hand over or return. Non-owners can't pause listings. A double-click is recorded once. |
-| 9 | Editing with open requests | Can't change type, shrink the max period, or lower quantity below commitments. Pause/resume works. Delete cancels requests and notifies; deleted items vanish from Saved. |
-| 10 | Wanted board | Validation, offers with an attached listing, one offer per person, accept → fulfilled, reopen. Empty search → prefilled wanted post. |
-| 11 | Profile and community | Blank-name guard. Changing hostel moves listings. Saved items, mark-all-read, guest ♥ → login. |
-| 12 | Navigation | Filters stack, live search keeps focus, back/forward, `/` shortcut, theme persists, reset restores data. |
-| 13 | Mobile (390 px) | No horizontal overflow on 12 pages, bottom tab bar, filter drawer. |
-
-**Result: 159 / 159 checks pass, 0 JavaScript errors** (Edge, 26 Nov 2026).
-
-**What verification caught.** These are defects in AI-generated code that were found by running it, not by reading it (L1 s49–51):
-
-| Defect | Found by | Fix |
-|---|---|---|
-| Two people could be accepted for the same dates | Design review | Booking conflict model, auto-decline |
-| No way to represent 2 of the same item; duplicates silently created | Edge-case audit | `quantity` field, per-day load, duplicate dialog |
-| Old tab or double click could re-run Accept or Decline | Second-tab test | `guardReq` re-validates the role and state |
-| Item could be deleted while on loan; type could change under open requests | Edge-case tests | Blocked with explanations |
-| Hidden radio inputs sat over neighbouring stars, so clicking ★4 could save ★5 | Test failed: stored 5 instead of 4 | Inputs made non-interactive |
-| Stacked toasts covered modal buttons, so clicks were lost | Test failed: Delete did nothing | Toasts limited to 3 and click-through |
-| Form fields read through `form.fieldName` (not portable) | jsdom smoke test crash | `form.elements.fieldName` |
-| A bulk edit broke an unrelated variable (`f.name` in reviews) | Smoke test crash | Corrected and re-tested |
-| Content overflowed sideways on phones | Screenshot review | `min-width: 0` guards |
-| Low contrast in dark mode; icon-only button had no label | Lighthouse | Darker button colour, `aria-label` |
-
-The test harness itself also had bugs (state carried over between groups, background-tab timer throttling, clicks during a 0.18 s modal animation). These were diagnosed separately from app bugs before any app code was changed, so no assertion was weakened to get a green run.
-
-### 6.2 Lighthouse audit (performance, accessibility, best practices)
-
-| | Performance | Accessibility | Best practices | SEO | First paint | Layout shift |
+| | Performance | Accessibility | Best Practices | SEO | First Contentful Paint | Layout Shift |
 |---|---|---|---|---|---|---|
 | Desktop | **100** | **100** | **100** | **100** | 0.4 s | 0 |
-| Mobile (throttled) | **98** | **100** | **100** | **100** | 1.8 s | 0 |
+| Mobile | **98** | **100** | **100** | **100** | 1.8 s | 0 |
 
-Before the fixes, Accessibility was 96 (desktop) and 91 (mobile).
+Accessibility was 96 (desktop) and 91 (mobile) before the contrast and labelling fixes.
 
----
+### 4.3 Defects found and fixed during evaluation
 
-## 7. How the course principles were applied
+| Defect | How it was found | Fix |
+|---|---|---|
+| Two people could be accepted for the same dates | Design review of the request flow | Per-day booking model; clash label; auto-decline |
+| No way to list 2 of the same item; duplicate listings created silently | Edge-case review | Quantity field; duplicate dialog |
+| An old tab or double click could re-run Accept or Decline | Two-tab browser test | Every action re-validates the user and the current status |
+| Item could be deleted while on loan; type could change under open requests | Edge-case tests | Blocked with an explanation |
+| Request with already-passed dates could still be accepted | Edge-case test | Blocked |
+| Blank names accepted at sign-up and in the profile | Validation test | Rejected |
+| Clicking 4 stars could save 5 (hidden inputs overlapped the stars) | Rating test | Inputs made non-interactive |
+| Stacked toast messages covered dialog buttons, so clicks were lost | Delete test | Max 3 toasts, click-through |
+| Content scrolled sideways on phones | Mobile screenshots | Layout overflow guards |
+| Low contrast in dark mode; icon-only button without a label | Lighthouse | Darker button colour; `aria-label` |
 
-| CS5013 principle (lecture, slide) | How it shows in this project |
+### 4.4 Live deployment check
+
+The public URL https://campus-share-bvs.netlify.app was opened in Edge at phone size:
+- The home page loads with **0 JavaScript errors**.
+- The double-booking guard and multi-unit stock display work.
+- The security headers are present: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`.
+
+### 4.5 Summary
+
+| Criterion | Result |
 |---|---|
-| **"The fix is verification: compile, run, test, read"** (L1 s35–36) | Nothing was accepted on reading alone. Every change ran through the browser suite, and all bugs in §6.1 were found by running the code. |
-| **Calibration: treat AI output as a smart but unverified collaborator's first draft** (L1 s37) | The AI's own claims ("this works") were never taken as evidence. Only test results and screenshots were. |
-| **The AI-assisted loop: Intent → Prompt → Suggestion → Read → Run & test → Commit** (L1 s48) | Each feature in [PROMPTS.md](PROMPTS.md) records intent, prompt, output, verification and the gap that led to the next prompt. |
-| **Iterate by testing on bad input** (L1 s49–51) | Groups 2, 3, 5 and 8 feed invalid, stale and forged input on purpose. |
-| **Four parts of a prompt: instruction, context, examples, output format** (L2 s3–4) and **CO-STAR** (L2 s103) | Each prompt in the log is written in this shape. |
-| **"Iteration: name the gap", not "try again"** (L2 s11) | Every follow-up prompt names a measured gap, such as "Delete did nothing: status=available, modal still open". |
-| **Logging prompt iterations as an engineering artefact** (L2 s35, s139) | [PROMPTS.md](PROMPTS.md) is versioned in the repository. |
-| **Ask for the test first / 3 happy + 2 edge** (L2 s39–40) | Each test group pairs happy paths with edge and abuse cases. |
-| **Negative prompting** (L2 s66–71, s127) | Prompts forbid frameworks, build steps, unescaped HTML, weakened assertions and invented claims. |
-| **Fix-this-code: diagnosis → patch → explanation; distrust unexplained patches** (L4 s9–11) | Each failure was diagnosed first, e.g. a test bug vs. an app bug. The toast fix came with its explanation (toasts covering buttons). |
-| **Tests decide; diff review after every refactor** (L4 s22, s56) | The suites were rerun after every change. |
-| **Characterization tests before refactoring** (L4 s97–101) | The earlier suites (65 and 16 checks) were rerun to catch regressions before the quantity/guard refactor. |
-| **Coverage is hygiene, not quality; read every assertion** (L5 s13, s16) | The assertions encode requirements (e.g. "3rd request auto-declined"), not implementation details. |
-| **README with description, build, quick example; docs as code; TODO escape hatch** (L5 s34–37) | README, AGENTS.md and the docs live in the repository. Unknowns (name, URLs) are marked TODO, not invented. |
-| **Data leakage: never paste secrets or personal data** (L1 s45–47) | Only fictional data. No keys, no real student data, no external APIs. |
-| **Disclose AI assistance; never submit code you have not read** (L1 s5, s47) | See §8. Reading the code before the viva is listed as a required human step. |
-
----
-
-## 8. AI usage disclosure
-
-**Tool:** Claude Code (Claude Opus 5.5), in VS Code, 26 November 2026.
-
-**AI-generated:** all application code (`index.html`, `css/`, `js/`), the demo data, the browser test suite (`tests/`), and the documentation (this file, README, PROMPTS.md, AGENTS.md, DEPLOYMENT.md).
-
-**Human-directed:**
-- the problem and scope;
-- the decision to build a demo prototype;
-- the requirement to audit edge cases (e.g. "two of the same item");
-- the requirement to follow the CS5013 principles;
-- the choice of Netlify and GitHub for hosting.
-
-**How correctness was verified:** the real-browser suite (159 checks, §6.1), the earlier in-memory smoke tests (81 checks), Lighthouse (§6.2), and visual review of desktop and mobile screenshots. Each defect in §6.1 was fixed and re-tested before moving on.
-
-**Still required from the student before submission or viva:**
-1. **Read and be able to explain every file**, especially `js/app.js` (booking model, guards, router) and `tests/browser-tests.js`. The course forbids submitting AI code you have not read (L1 s47).
-2. Fill in the TODO fields at the top (name, roll number, deployed URL, repository URL).
-3. Open the deployed link on a phone and do one complete borrow flow by hand.
-
----
-
-## 9. Limitations and future work
-
-| Limitation | Next step |
-|---|---|
-| Data is per browser, so not shared between real users | Move storage to a hosted database with real-time sync (e.g. Supabase or Firebase). The data model already maps 1:1 to tables. |
-| Demo passwords in plain text; no email verification | Campus SSO or OTP login; server-side auth and row-level security (only an owner can accept their requests). |
-| Notifications appear in the app only | Email or push notifications for new requests and due dates. |
-| Photos stored as compressed data-URLs | Object storage with thumbnails. |
-| Day-level bookings | Optional hour slots for short loans (chargers, irons). |
-| No moderation or reporting | Report listing/user, admin dashboard, ban rules. |
-
----
-
-## 10. Running it
-
-- **Online:** https://campus-share-bvs.netlify.app
-- **Locally:** open `index.html` in any browser, or run `npx serve .`.
-- **Tests:** `npm install`, then `npm test` (needs Microsoft Edge; set `BROWSER` to use Chrome).
-- **Demo tip:** in the top banner, pick **Kabir Singh** → Requests to see the double-booking guard. Pick **Rohan Verma** → his calculator listing to see quantity (2 units).
+| Functional coverage | Listings (4 modes, quantity), browse/search, requests with full lifecycle, chat, ratings, notifications, wanted board, hostels, accounts |
+| Correctness | 159/159 browser checks, 0 JS errors |
+| Data integrity | No double-booking, derived status, guarded actions, validated input |
+| Performance | Lighthouse 100 (desktop), 98 (mobile); first paint 0.4 s |
+| Accessibility | Lighthouse 100 on desktop and mobile; WCAG AA contrast; keyboard shortcuts |
+| Mobile | No horizontal overflow on any tested page; bottom tab bar |
+| Availability | Public HTTPS link, no installation or sign-up needed |

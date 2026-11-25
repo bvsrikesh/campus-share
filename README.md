@@ -2,7 +2,7 @@
 
 A campus sharing marketplace where students can **lend, rent, sell or give away** items across hostels, and post **wanted requests** for things they need.
 
-**Live app:** https://campus-share-bvs.netlify.app · **Code:** https://github.com/bvsrikesh/campus-share · **Submission:** [docs/SUBMISSION.md](docs/SUBMISSION.md) · **Prompt log:** [docs/PROMPTS.md](docs/PROMPTS.md) · **Deploy guide:** [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
+**Live app:** https://campus-share-bvs.netlify.app · **Code:** https://github.com/bvsrikesh/campus-share · **Submission:** [docs/SUBMISSION.md](docs/SUBMISSION.md) · **PDF:** [docs/CampusShare_Submission.pdf](docs/CampusShare_Submission.pdf) · **Deploy guide:** [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
 
 | Tests | Lighthouse (desktop) | Lighthouse (mobile) |
 |---|---|---|
@@ -53,11 +53,9 @@ css/styles.css    all styles (light + dark themes, responsive)
 js/data.js        categories, constants, seed data
 js/app.js         store (localStorage), router, pages, actions
 tests/            end-to-end browser tests (puppeteer-core + Edge)
-docs/             submission, prompt log, deployment guide
+docs/             submission (problem, link, prompts, evaluations) + PDF, deployment guide
 AGENTS.md         rules for AI coding assistants working on this repo
 netlify.toml      hosting config (static, no build)
 ```
 Data is kept in `localStorage` under `campusshare.db.v1`. The prototype has no backend.
 
-## AI usage
-Built with Claude Code (Claude Opus 5.5) for CS5013 Programming with AI. The disclosure, the verification and the mapping to the course principles are in [docs/SUBMISSION.md](docs/SUBMISSION.md) (§7–8).

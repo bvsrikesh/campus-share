@@ -18,7 +18,7 @@
 
 When the site is connected to GitHub, every `git push` redeploys it automatically in about 30 seconds.
 
-> Data still stays in each visitor's own browser (`localStorage`). Everyone gets their own copy of the demo; visitors don't see each other's changes. See SUBMISSION.md §4, assumption 1.
+> Data still stays in each visitor's own browser (`localStorage`). Everyone gets their own copy of the demo; visitors don't see each other's changes. See the scope and assumptions in SUBMISSION.md.
 
 ---
 
@@ -83,6 +83,6 @@ On the GitHub repo, open **Settings → Pages → Source: Deploy from a branch �
 | Choice | Merit |
 |---|---|
 | Static hosting (no server) | Free, fast (Lighthouse 100) and nothing to maintain or secure. |
-| Netlify connected to GitHub | Every push redeploys, so the link always matches the code graders read. |
-| Public GitHub repo | Graders can read the code, docs, prompt log and test suite at one link. |
-| `netlify.toml` in the repo | Deployment settings and security headers are versioned with the code ("docs as code", L5 s37). |
+| Netlify connected to GitHub | Every push redeploys, so the link always matches the code in the repository. |
+| Public GitHub repo | Anyone can read the code, docs and test suite at one link. |
+| `netlify.toml` in the repo | Deployment settings and security headers are versioned with the code. |
