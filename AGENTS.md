@@ -29,5 +29,5 @@ CampusShare is a zero-build static web app (HTML, CSS, vanilla JS) where hostel 
 | `js/data.js` | categories, types, pickup spots, seed data (`seed()`) |
 | `js/app.js` | store (`loadDB`, `saveDB`), booking model, guards, router (`ROUTES`), pages (`page*`), `ACTIONS` (clicks), `FORMS` (submits), event wiring |
 | `css/styles.css` | design tokens (light/dark), components, responsive rules |
-| `tests/browser-tests.js` | 13 end-to-end groups (puppeteer-core + Edge) |
+| `tests/browser-tests.js` | 14 end-to-end groups (puppeteer-core + Edge) |
 | `docs/` | submission, prompt log, deployment |

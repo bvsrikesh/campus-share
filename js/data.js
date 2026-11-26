@@ -90,7 +90,7 @@ function seed() {
     I('i10', 'u10','Navy Formal Blazer (Unisex, size 40)', 'clothing', 'rent', 50, 'Like new', 'Dry-cleaned. Perfect for placement interviews, farewells and presentations.', 48, { emoji: '👔', deposit: 300 }),
     I('i11', 'u3', 'Yamaha F310 Acoustic Guitar', 'fun', 'rent', 50, 'Good', 'Comes with a gig bag, capo and spare strings. Slight scratch on the back.', 70, { emoji: '🎸', deposit: 1000 }),
     I('i12', 'u1', 'DSA Handwritten Notes (Sem 3, full syllabus)', 'books', 'free', 0, 'Good', 'Complete notes for Data Structures — trees, graphs, DP. Topper-approved 😉 Scanned copy also available.', 36, { emoji: '📝' }),
-    I('i13', 'u2', '4-Socket Extension Board (5m)', 'electronics', 'lend', 0, 'Good', 'Surge protected. 5m cable reaches from the wall to any bed.', 12, { emoji: '🔌' }),
+    I('i13', 'u2', '4-Socket Extension Board (5m)', 'electronics', 'lend', 0, 'Good', 'Surge protected. 5m cable reaches from the wall to any bed. I have 5 of these (bought them for our club events), so borrow as many as you need.', 12, { emoji: '🔌', quantity: 5, maxDays: 5 }),
     I('i14', 'u5', 'Cricket Kit (bat, pads, gloves, helmet)', 'sports', 'lend', 0, 'Fair', 'Full kit for inter-hostel matches. Bat is SS English willow.', 100, { emoji: '🏏', maxDays: 2 }),
     I('i15', 'u6', 'Mini Fridge 50L', 'kitchen', 'sell', 3500, 'Good', 'Godrej 50L. Works great, graduating soon so selling. You pick it up from K-220.', 18, { emoji: '🧊' }),
     I('i16', 'u4', 'Large Trolley Suitcase', 'travel', 'lend', 0, 'Like new', 'Large 75cm 4-wheel suitcase with TSA lock. For going home during breaks.', 55, { emoji: '🧳', maxDays: 14 }),
@@ -205,5 +205,5 @@ function seed() {
     N('u1', '<b>Vikram Rao</b> declined your request for <b>Mini Portable Projector</b>', '/request/r7', 66, true),
   ];
 
-  return { version: 3, session: null, hostels, users, items, wanted, requests, reviews, notifications };
+  return { version: 4, session: null, hostels, users, items, wanted, requests, reviews, notifications };
 }

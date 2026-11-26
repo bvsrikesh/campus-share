@@ -2,11 +2,7 @@
 
 **Borrow, lend, rent and share everyday items across campus hostels**
 
-| | |
-|---|---|
-| **App link** | https://campus-share-bvs.netlify.app |
-| **Source code** | https://github.com/bvsrikesh/campus-share |
-| **Submitted by** | TODO: name, roll number |
+**App link:** https://campus-share-bvs.netlify.app
 
 ---
 
@@ -21,6 +17,28 @@ Hostel students often need things they use only a few times: a scientific calcul
 3. **Request** an item with dates, pickup spot and a message. Track the request from accept to hand-over to return, with chat, notifications and ratings.
 4. **Post what they need** on a Wanted board when nobody has listed it yet.
 5. Use **hostels** as communities, and manage their own **account**, listings and requests.
+
+### Feature highlights
+
+> **Four ways to share.** Lend (free), Rent (per day), Sell, Giveaway: one listing and request flow covers all four.
+>
+> **Multi-unit items.** An owner can list 5 extension boards. One student requests 2, another the remaining 3, and both are accepted. A further request is blocked or auto-declined because no units are left.
+>
+> **No double-booking.** Dates count as full only when every unit is booked. Clashing requests show "Clashes with Aarav's booking" instead of Accept, and are auto-declined when another request takes their slot.
+>
+> **Full request lifecycle.** Request → Accept → Hand-over → Return, with chat, notifications, overdue warnings, a two-step return (borrower marks returned, owner confirms) and ratings on both sides.
+>
+> **Smart request form.** It shows already-booked dates and starts on the first free window. A live estimate shows days × units × price plus deposit. Offers on items for sale.
+>
+> **Wanted board.** Ask for items nobody has listed. Others offer help and can attach their own listing.
+>
+> **Hostel communities.** Items from your hostel come first, and every hostel has a page with its listings, members and stats.
+>
+> **Privacy and safety.** A room number is revealed only after acceptance, and all text is escaped. Every action is re-checked, so old tabs, double clicks and forged buttons can't corrupt data.
+>
+> **Duplicate detection.** Listing something you already listed offers to add units to the existing listing instead.
+>
+> **Works everywhere.** Mobile layout with a bottom tab bar, light and dark themes, keyboard shortcuts. Opens from a link with nothing to install.
 
 **Key requirements.**
 - **No double-booking**, including items with several units.
@@ -41,12 +59,10 @@ Hostel students often need things they use only a few times: a scientific calcul
 
 **Live app:** https://campus-share-bvs.netlify.app. It opens on any phone or laptop with no sign-up needed.
 
-**Source code:** https://github.com/bvsrikesh/campus-share
-
 **How to try it**
 1. Use the **"Viewing as"** dropdown in the top banner to switch between 10 demo students. Password for all accounts: `demo123`.
 2. As **Kabir Singh**, open **Requests**: one request clashes with an existing booking, so Accept is blocked.
-3. As **Rohan Verma**, open the **Casio calculator**: it has 2 units, so two people can borrow it at once.
+3. **Multi-unit:** as **Aarav Sharma**, open **4-Socket Extension Board** (Priya has 5). Set **How many? = 2** and send. Switch to **Rohan Verma** and request the remaining **3** for the same dates. Switch to **Priya Nair** → Requests and accept both. Any further request for those dates is blocked.
 4. **Reset** in the banner restores the demo data at any time.
 
 ---
@@ -164,12 +180,24 @@ Improve CampusShare's request flow and demo experience.
 ```text
 Make CampusShare's data impossible to get into an inconsistent state.
 
-QUANTITY
-- Add a quantity field (1-50) to listings. For lend/rent, a date range is full
-  only when, on some day in it, every unit is booked (count bookings per day).
-  For sell/giveaway, each completed hand-over uses one unit; the item becomes
-  Sold/Claimed when none are left; reservations (accepted requests) also hold units.
-- Show stock: "x2 - 1 of 2 free now" on cards and item pages.
+QUANTITY AND MULTI-UNIT REQUESTS
+- Add a quantity field (1-50) to listings.
+- A request can ask for several units ("How many?", 1..quantity). Example: an
+  owner has 5 extension boards; Aarav requests 2 and Rohan requests the remaining
+  3 for the same dates. Both can be accepted; any further request for those dates
+  is blocked or auto-declined.
+- Count UNITS, not requests, everywhere:
+  - lend/rent: on every day of the range, units booked + units requested must not
+    exceed the quantity. Show "Only X of N free on these dates (needs Y)" when it
+    doesn't fit;
+  - sell/giveaway: units left = quantity - units sold - units reserved by accepted
+    requests. A hand-over sells all of that request's units, and the item becomes
+    Sold/Claimed when none are left;
+  - rent total = days x price x units; deposit = deposit x units.
+- When a request is accepted, auto-decline every pending request that no longer
+  fits in the remaining units.
+- Show stock: "x5 - 3 of 5 free now" on cards and item pages; show the units on
+  request rows, the request page and the owner's notification.
 - Derive item status (available / on loan / sold / claimed) from the requests
   after every change. Never set it by hand. Only paused/removed are manual.
 
@@ -247,22 +275,70 @@ GROUPS
 12. Filters, live search keeps focus, back/forward, "/" shortcut, theme persistence,
     reset.
 13. Mobile 390px: no horizontal overflow on 12 pages, bottom bar, filter drawer.
+14. Multi-unit requests: on a 5-unit item one student requests 2, another the
+    remaining 3, a third 4 and a fourth 1. Accepting 2 auto-declines the 4; accepting
+    the 3 auto-declines the 1; 6 of 5 is rejected; all 5 can be booked on a free day;
+    rent total and deposit multiply by units; a 5-unit sale sold as 2 + 3 sells out.
 
 RULE
 When a check fails, first decide whether the bug is in the test or in the app.
 Fix the real cause; never weaken an assertion to get a green run.
 ```
 
-### Prompt 5: Accessibility and performance audit
+### Prompt 5: Evaluate corner cases, fix what breaks, report results
 
 ```text
-Serve CampusShare locally and run Lighthouse with Edge in desktop and mobile
-modes. Report the Performance, Accessibility, Best Practices and SEO scores plus
-First Contentful Paint, Largest Contentful Paint, Total Blocking Time and
-Cumulative Layout Shift. List every failing audit with the exact element. Fix
-contrast and labelling problems so they meet WCAG AA in both light and dark themes,
-without changing the light-theme design. Re-run and report before/after, then re-run
-the end-to-end suite.
+Go through CampusShare end to end and evaluate it against real-world corner cases.
+For every case: try it in the running app (as the right users, switching with
+"Viewing as"), write down the expected behaviour, check the actual behaviour, fix the
+app if they differ, and add a browser test so it stays fixed.
+
+CORNER CASES TO COVER (examples, not a complete list)
+Same object, several units
+- One owner has TWO of the same calculator. Two students must be able to borrow
+  them on the same dates; a third asking for those dates must be blocked or
+  auto-declined, and must still be able to book other dates.
+- One owner has FIVE extension boards. Student A requests 2, student B requests the
+  remaining 3 for the same dates: both can be accepted. Student C asks for 4 on those
+  dates: after A is accepted only 3 are left, so C is auto-declined and notified.
+  Student D asks for 1: after B is accepted nothing is left, so D is auto-declined.
+  Nobody can ask for 6 of 5. Someone can take all 5 on a different, free day.
+- Rent with several units: 2 units x 2 days x Rs 20 = Rs 80, deposit x 2.
+- A sale of 5 chairs bought as 2 + 3 must sell out; a third buyer must be declined.
+- Handing over 2 of 5 keeps the item "available" (3 of 5 free); handing over all 5
+  makes it "on loan"; the owner can't reduce quantity below the units that are out.
+Same object listed twice
+- The same owner lists "Rice cooker" again (any case/punctuation): offer to add the
+  units to the existing listing or post it separately.
+- Two DIFFERENT owners list the same calculator model: both must appear in search
+  and be requestable independently.
+Booking and dates
+- Two people want the same single cycle on overlapping dates: only one can be
+  accepted; the other shows "Clashes with <name>'s booking".
+- Past start date, end before start, longer than the max lending period, more than
+  6 months ahead, an old pending request whose dates have already passed.
+Stale state and wrong person
+- Two browser tabs: tab 2 declines a request, tab 1 still shows Accept. Clicking it
+  must be rejected, not applied.
+- Double-clicking Accept must record one acceptance.
+- A borrower forcing an owner-only action (accept / hand over / confirm return),
+  or a non-owner pausing someone else's listing, must be refused.
+- Sending a second request for an item you already requested.
+Listings that change under open requests
+- Deleting an item that is out on loan; switching Lend -> Sell while requests are
+  open; shortening the max period below an open request.
+Input and UI
+- Blank or whitespace-only names, non-campus or duplicate emails (any case), zero /
+  negative / absurd prices and offers, a rating given twice, HTML typed into a title.
+- Clicking exactly the 4th star must save 4 stars; many toast messages must never
+  block buttons; no sideways scrolling on a 390px phone; readable contrast in dark mode.
+
+REPORT
+1. A table of test groups with the number of checks and pass/fail (all must pass, with
+   no JavaScript errors in the page).
+2. A table of every defect found: what was wrong, how it was found, how it was fixed.
+Never weaken a test to make it pass: when a check fails, first decide whether the
+test or the app is wrong, then fix the real cause.
 ```
 
 
@@ -270,7 +346,7 @@ the end-to-end suite.
 
 ## 4. Evaluations
 
-### 4.1 Automated end-to-end tests: 159 / 159 passed
+### 4.1 Automated end-to-end tests: 185 / 185 passed
 
 The suite (`tests/browser-tests.js`) drives **Microsoft Edge** and clicks real buttons. Every group also asserts **zero JavaScript errors**.
 
@@ -289,7 +365,8 @@ The suite (`tests/browser-tests.js`) drives **Microsoft Edge** and clicks real b
 | 11 | Profile, hostels, saved items, notifications | 9 | Pass |
 | 12 | Filters, search, navigation, theme, reset | 10 | Pass |
 | 13 | Mobile layout (390 px) | 4 | Pass |
-| | **Total** | **159** | **159 passed, 0 failed, 0 JS errors** |
+| 14 | Multi-unit requests: 2 of 5 + remaining 3, auto-decline, rent/deposit × units, 5-unit sale | 26 | Pass |
+| | **Total** | **185** | **185 passed, 0 failed, 0 JS errors** |
 
 ### 4.2 Defects found and fixed during evaluation
 
@@ -297,6 +374,7 @@ The suite (`tests/browser-tests.js`) drives **Microsoft Edge** and clicks real b
 |---|---|---|
 | Two people could be accepted for the same dates | Design review of the request flow | Per-day booking model; clash label; auto-decline |
 | No way to list 2 of the same item; duplicate listings created silently | Edge-case review | Quantity field; duplicate dialog |
+| A request could only take one unit, so 5 boards for an event needed 5 separate requests | Feature review | "How many?" field; every rule counts units |
 | An old tab or double click could re-run Accept or Decline | Two-tab browser test | Every action re-validates the user and the current status |
 | Item could be deleted while on loan; type could change under open requests | Edge-case tests | Blocked with an explanation |
 | Request with already-passed dates could still be accepted | Edge-case test | Blocked |
@@ -336,73 +414,79 @@ Filter by type, category, hostel and price, with removable filter chips. Items f
 
 Already-booked dates are shown. The date picker starts on the first free window. A live estimate shows days × price plus the refundable deposit. Pickup spot and quick-message chips are included.
 
-### 5.5 Multiple units of one item
+### 5.5 Requesting several units (2 of 5)
 
-![Multiple units of one item](screenshots/05-quantity.jpg)
+![Requesting several units](screenshots/05-quantity.jpg)
 
-This calculator has 2 units ("2 of 2 free now"), so two students can borrow it on the same dates.
+Priya has 5 extension boards. The request form asks **How many?**. Here a student asks for 2 of 5 and the estimate confirms "5 of 5 units free on these dates". Another student can then request the remaining 3.
 
-### 5.6 Double-booking guard
+### 5.6 Owner accepts 2 + 3, extra request auto-declined
+
+![Owner accepts 2 + 3 units](screenshots/05b-units-owner.jpg)
+
+Aarav asked for 2 units and Rohan for the remaining 3, and the owner accepted both ("5 reserved for upcoming pickups"). Vikram's request for 4 units on the same dates was declined automatically and he was notified, because no units were left.
+
+### 5.7 Double-booking guard
 
 ![Double-booking guard](screenshots/06-clash-guard.jpg)
 
 The owner cannot accept Arjun's request because it clashes with Aarav's accepted booking. Sneha's request, on other dates, can be accepted.
 
-### 5.7 Request page: timeline and chat
+### 5.8 Request page: timeline and chat
 
 ![Request page: timeline and chat](screenshots/07-request-chat.jpg)
 
 The progress timeline, request details and role-based actions. After acceptance the chat shows the owner's hostel and room.
 
-### 5.8 List an item with live preview
+### 5.9 List an item with live preview
 
 ![List an item with live preview](screenshots/08-list-item.jpg)
 
 Four sharing modes; the fields adapt to the mode. Quantity and deposit fields. The preview card updates as you type.
 
-### 5.9 Duplicate listing detection
+### 5.10 Duplicate listing detection
 
 ![Duplicate listing detection](screenshots/09-duplicate-dialog.jpg)
 
 Listing something you already listed offers to add the unit to the existing listing instead of creating a duplicate.
 
-### 5.10 Wanted board
+### 5.11 Wanted board
 
 ![Wanted board](screenshots/10-wanted-board.jpg)
 
 Students post what they need, with urgency badges, budget and mode.
 
-### 5.11 Wanted post with an offer
+### 5.12 Wanted post with an offer
 
 ![Wanted post with an offer](screenshots/11-wanted-offer.jpg)
 
 Another student offers help and attaches their own listing. The poster can accept the offer or mark the post fulfilled.
 
-### 5.12 Notifications
+### 5.13 Notifications
 
 ![Notifications](screenshots/12-notifications.jpg)
 
 New requests, offers and decisions, with unread markers and "mark all read".
 
-### 5.13 Hostel page
+### 5.14 Hostel page
 
 ![Hostel page](screenshots/13-hostel.jpg)
 
 Each hostel has its stats, open wanted posts, listings and members.
 
-### 5.14 Profile
+### 5.15 Profile
 
 ![Profile](screenshots/14-profile.jpg)
 
 Hostel, verified badge, rating, sharing stats, listings and reviews.
 
-### 5.15 Log in with demo accounts
+### 5.16 Log in with demo accounts
 
 ![Log in with demo accounts](screenshots/15-login.jpg)
 
 Campus-email login, plus one-click demo accounts.
 
-### 5.16 Mobile: light and dark themes
+### 5.17 Mobile: light and dark themes
 
 <p class="pair"><img src="screenshots/16-mobile-light.jpg" alt="Mobile item page, light theme" width="300"> <img src="screenshots/17-mobile-dark.jpg" alt="Mobile home page, dark theme" width="300"></p>
 

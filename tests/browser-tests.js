@@ -37,10 +37,11 @@ function check(name, cond, detail = '') { results.push({ group: current, name, o
   const req = async (id) => (await db()).requests.find((r) => r.id === id);
   const item = async (id) => (await db()).items.find((i) => i.id === id);
   const lastReq = async () => { const d = await db(); return d.requests[d.requests.length - 1]; };
-  async function requestItem(itemId, { from, to, offer, msg } = {}) {
+  async function requestItem(itemId, { from, to, offer, msg, units } = {}) {
     await nav('/item/' + itemId);
     if (from != null) await setVal('form[data-form=request] [name=from]', await day(from));
     if (to != null) await setVal('form[data-form=request] [name=to]', await day(to));
+    if (units != null) await setVal('form[data-form=request] [name=units]', String(units));
     if (offer != null) await setVal('form[data-form=request] [name=offer]', String(offer));
     if (msg) await setVal('form[data-form=request] [name=message]', msg);
     const before = (await db()).requests.length;
@@ -394,6 +395,67 @@ function check(name, cond, detail = '') { results.push({ group: current, name, o
     await page.setViewport({ width: 1366, height: 900 });
     await as('u3'); await nav('/item/i1'); await page.screenshot({ path: path.join(SHOTS, 'desktop-owner-qty.png') });
     await as('u5'); await nav('/requests?tab=received'); await page.screenshot({ path: path.join(SHOTS, 'desktop-clash.png') });
+  });
+
+  await group('14. Multi-unit requests (2 of 5, then the remaining 3)', async () => {
+    // i13: Priya's extension boards, 5 units, lend
+    await as('u1'); await nav('/item/i13');
+    check('5-unit item shows a "How many?" field', await exists('form[data-form=request] [name=units]'));
+    await setVal('form[data-form=request] [name=from]', await day(1)); await setVal('form[data-form=request] [name=to]', await day(2));
+    await setVal('form[data-form=request] [name=units]', '2');
+    check('estimate shows "2 units" and "5 of 5 units free"', /2 units/.test(await text()) && /5 of 5 units free/.test(await text()));
+    const a = await requestItem('i13', { from: 1, to: 2, units: 2 });
+    check('Aarav requests 2 of 5 units', a && a.units === 2);
+    await as('u3'); const b = await requestItem('i13', { from: 1, to: 2, units: 3 });
+    check('Rohan requests the remaining 3 units', b && b.units === 3);
+    await as('u7'); const c = await requestItem('i13', { from: 1, to: 2, units: 4 });
+    await as('u4'); const d = await requestItem('i13', { from: 2, to: 2, units: 1 });
+    check('two more students also request (4 units, 1 unit)', c && d);
+    await as('u6'); let r = await requestItem('i13', { from: 1, to: 1, units: 6 });
+    check('asking for 6 of 5 is rejected', !r);
+    await as('u2'); await nav('/item/i13');
+    check('owner sees all 4 requests with unit counts', /2 units/.test(await text()) && /3 units/.test(await text()) && /4 units/.test(await text()));
+    await nav('/request/' + a.id); await click('[data-action=req-accept]');
+    check('owner accepts 2 units', (await req(a.id)).status === 'accepted');
+    check('4-unit request auto-declined (only 3 left on those dates)', (await req(c.id)).status === 'declined');
+    check('1-unit request still pending (3 left)', (await req(d.id)).status === 'pending');
+    await nav('/request/' + b.id);
+    check('remaining-3 request is acceptable', await exists('[data-action=req-accept]'));
+    await click('[data-action=req-accept]');
+    check('owner accepts the remaining 3', (await req(b.id)).status === 'accepted');
+    check('1-unit request on overlapping day auto-declined (0 left)', (await req(d.id)).status === 'declined');
+    await as('u6'); await nav('/item/i13');
+    await setVal('form[data-form=request] [name=from]', await day(1)); await setVal('form[data-form=request] [name=to]', await day(1));
+    check('new borrower sees "All 5 units are booked" for those dates', /All 5 units are booked/.test(await text()));
+    r = await requestItem('i13', { from: 3, to: 3, units: 5 });
+    check('…but can take all 5 on a free day', r && r.units === 5);
+    await as('u2');
+    await nav('/request/' + a.id); await click('[data-action=req-handover]');
+    check('2 of 5 handed over → still available, "3 of 5 free now"', (await item('i13')).status === 'available' && /3 of 5 free now/.test(await (async () => { await nav('/item/i13'); return text(); })()));
+    await nav('/request/' + b.id); await click('[data-action=req-handover]');
+    check('all 5 handed over → "on loan"', (await item('i13')).status === 'onloan');
+    await nav('/edit/i13'); await setVal('[name=quantity]', '4'); await submit('post');
+    check('quantity can’t drop below the 5 units out', (await item('i13')).quantity === 5 && /committed/.test(await toast()));
+    await nav('/request/' + a.id); await click('[data-action=req-return]');
+    check('2 returned → available again', (await item('i13')).status === 'available');
+    // rent: total multiplies by units; deposit too
+    await ev(() => { const it = DB.items.find((i) => i.id === 'i22'); it.quantity = 3; it.deposit = 100; saveDB(); });
+    await as('u1'); const rr = await requestItem('i22', { from: 1, to: 2, units: 2 });
+    check('rent total = 2 days × ₹20 × 2 units = ₹80', rr && rr.total === 80);
+    await nav('/request/' + rr.id); check('request page shows units and deposit × units (₹200)', /2 of 3/.test(await text()) && /₹200/.test(await text()));
+    // sell: 5 chairs, buyer A takes 2, buyer B the remaining 3
+    await ev(() => { const it = DB.items.find((i) => i.id === 'i18'); it.quantity = 5; saveDB(); });
+    await as('u1'); const s1 = await requestItem('i18', { units: 2, offer: 300 });
+    await as('u2'); const s2 = await requestItem('i18', { units: 3, offer: 280 });
+    await as('u4'); const s3 = await requestItem('i18', { units: 1, offer: 300 });
+    check('three buyers request 2, 3 and 1 of 5 chairs', s1 && s2 && s3 && s1.units === 2 && s2.units === 3);
+    await as('u9');
+    for (const x of [s1, s2]) { await nav('/request/' + x.id); await click('[data-action=req-accept]'); }
+    await nav('/request/' + s3.id); check('third buyer blocked: "No units left"/"All 5 units are reserved"', !(await exists('[data-action=req-accept]')));
+    for (const x of [s1, s2]) { await nav('/request/' + x.id); await click('[data-action=req-handover]'); }
+    const ch = await item('i18');
+    check('after handing over 2 + 3 → 5 sold, item "sold"', ch.sold === 5 && ch.status === 'sold');
+    check('remaining buyer auto-declined', (await req(s3.id)).status === 'declined');
   });
 
   await browser.close();

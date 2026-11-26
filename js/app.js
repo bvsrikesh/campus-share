@@ -44,7 +44,7 @@ const DB_KEY = 'campusshare.db.v1';
 let DB;
 function loadDB() {
   try { DB = JSON.parse(localStorage.getItem(DB_KEY)); } catch (e) { DB = null; }
-  if (!DB || DB.version !== 3) { DB = seed(); saveDB(); }
+  if (!DB || DB.version !== 4) { DB = seed(); saveDB(); }
 }
 function saveDB() {
   try { localStorage.setItem(DB_KEY, JSON.stringify(DB)); }
@@ -574,7 +574,7 @@ function ownerPanel(it) {
   const open = reqs.filter((r) => ['pending', 'accepted', 'active'].includes(r.status));
   return `<div class="card pad sticky">
     <h3>Manage your listing</h3>
-    <p class="muted small">Status: <b>${ITEM_STATUS[it.status]}</b>${qty(it) > 1 ? ` · ${unitsNote(it)}` : ''} · ${it.views} views</p>
+    <p class="muted small">Status: <b>${ITEM_STATUS[it.status]}</b>${qty(it) > 1 ? ` · ${unitsNote(it)}` : ''}${(() => { const n = sumUnits(DB.requests.filter((r) => r.itemId === it.id && r.status === 'accepted')); return n ? ` · <b>${n} reserved</b> for upcoming pickups` : ''; })()} · ${it.views} views</p>
     <div class="owner-actions">
       <a class="btn btn-ghost" href="#/edit/${it.id}">${icon('edit')}Edit</a>
       ${it.status === 'available' ? `<button class="btn btn-ghost" data-action="item-pause" data-id="${it.id}">${icon('pause')}Pause</button>` : ''}
@@ -597,46 +597,56 @@ function ownerPanel(it) {
 const isDated = (r) => r.type === 'lend' || r.type === 'rent';
 const overlaps = (a, b) => a.from <= b.to && b.from <= a.to;
 const qty = (it) => Math.max(1, Math.floor(+it.quantity || 1));
+const units = (r) => Math.max(1, Math.floor(+r.units || 1)); // units one request asks for
+const sumUnits = (list) => list.reduce((a, r) => a + units(r), 0);
 function bookings(itemId, exceptId) {
   return DB.requests.filter((x) => x.itemId === itemId && x.id !== exceptId && ['accepted', 'active'].includes(x.status));
 }
 function addDays(iso, n) { const d = parseDay(iso); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
-/* Highest number of units booked on any single day of [from, to]. */
+/* Highest number of units booked on any single day of [from, to] (sum of each booking's units). */
 function peakLoad(itemId, from, to, exceptId) {
   const bs = bookings(itemId, exceptId).filter((b) => b.from && overlaps({ from, to }, b));
   let peak = 0, sample = null;
   for (let d = from, i = 0; d <= to && i < 400; d = addDays(d, 1), i++) {
     const cover = bs.filter((b) => b.from <= d && d <= b.to);
-    if (cover.length > peak) { peak = cover.length; sample = cover[0]; }
+    const load = sumUnits(cover);
+    if (load > peak) { peak = load; sample = cover[0]; }
   }
   return { peak, sample };
 }
 /* sell / giveaway: units not yet sold and not reserved by an accepted request */
-const unitsLeft = (it, exceptId) => qty(it) - (it.sold || 0) - bookings(it.id, exceptId).length;
+const unitsLeft = (it, exceptId) => qty(it) - (it.sold || 0) - sumUnits(bookings(it.id, exceptId));
 /* What blocks accepting / making this request? null when it's fine. */
 function conflictFor(r) {
-  const it = getItem(r.itemId);
-  if (isDated(r)) { const { peak, sample } = peakLoad(it.id, r.from, r.to, r.id); return peak >= qty(it) ? sample : null; }
-  if (unitsLeft(it, r.id) > 0) return null;
-  return bookings(it.id, r.id)[0] || { soldOut: true, itemId: it.id };
+  const it = getItem(r.itemId), need = units(r);
+  if (isDated(r)) {
+    const { peak, sample } = peakLoad(it.id, r.from, r.to, r.id);
+    const free = qty(it) - peak;
+    return free >= need ? null : { ...(sample || {}), itemId: it.id, free, need, dated: true };
+  }
+  const free = unitsLeft(it, r.id);
+  if (free >= need) return null;
+  const b = bookings(it.id, r.id)[0];
+  return { ...(b || {}), itemId: it.id, free: Math.max(0, free), need, soldOut: !b };
 }
 function conflictText(c) {
   const it = getItem(c.itemId), n = qty(it);
-  if (c.soldOut) return 'No units left';
+  if (n > 1 && c.free > 0) return c.dated ? `Only ${c.free} of ${n} free on these dates (needs ${c.need})` : `Only ${c.free} of ${n} left (needs ${c.need})`;
+  if (c.soldOut || !c.requesterId) return n > 1 ? 'No units left' : 'Not available';
   const who = esc(getUser(c.requesterId).name.split(' ')[0]);
-  if (c.from) return n > 1 ? `All ${n} units booked on some of these dates` : `Clashes with ${who}’s booking (${fmtDay(c.from)} → ${fmtDay(c.to)})`;
+  if (c.dated) return n > 1 ? `All ${n} units booked on some of these dates` : `Clashes with ${who}’s booking (${fmtDay(c.from)} → ${fmtDay(c.to)})`;
   return n > 1 ? `All ${n} units are reserved` : `Already reserved for ${who}`;
 }
 /* Units committed to people right now — a listing's quantity can't go below this. */
 function committedUnits(it) {
   if (isDated(it)) return Math.max(0, ...bookings(it.id).filter((b) => b.from).map((b) => peakLoad(it.id, b.from, b.to).peak));
-  return (it.sold || 0) + bookings(it.id).length;
+  return (it.sold || 0) + sumUnits(bookings(it.id));
 }
 /* Derive available / on loan / sold from the requests, so the status can never drift. */
 function syncItemStatus(it) {
   if (['removed', 'paused'].includes(it.status)) return;
   if (isDated(it)) {
-    const out = DB.requests.filter((r) => r.itemId === it.id && r.status === 'active').length;
+    const out = sumUnits(DB.requests.filter((r) => r.itemId === it.id && r.status === 'active'));
     it.status = out >= qty(it) ? 'onloan' : 'available';
   } else {
     it.status = (it.sold || 0) >= qty(it) ? (it.type === 'sell' ? 'sold' : 'given') : 'available';
@@ -645,7 +655,7 @@ function syncItemStatus(it) {
 function unitsNote(it) {
   const n = qty(it);
   if (n === 1) return '';
-  if (isDated(it)) { const out = DB.requests.filter((r) => r.itemId === it.id && r.status === 'active').length; return `${n - out} of ${n} free now`; }
+  if (isDated(it)) { const out = sumUnits(DB.requests.filter((r) => r.itemId === it.id && r.status === 'active')); return `${Math.max(0, n - out)} of ${n} free now`; }
   return `${Math.max(0, n - (it.sold || 0))} of ${n} left`;
 }
 function ownItem(id) {
@@ -685,6 +695,10 @@ function acceptControls(r, size = 'btn-sm') {
 }
 
 function reqSummary(r) {
+  const u = units(r) > 1 ? `${units(r)} units · ` : '';
+  if (u && r.from) return u + `${fmtDay(r.from)} → ${fmtDay(r.to)}${r.total ? ` · ${rupee(r.total)}` : ''}`;
+  if (u && r.offer != null) return u + `offered ${rupee(r.offer)} each`;
+  if (u) return u + `requested ${timeAgo(r.createdAt)}`;
   if (r.from) return `${fmtDay(r.from)} → ${fmtDay(r.to)}${r.total ? ` · ${rupee(r.total)}` : ''}`;
   if (r.offer != null) return `Offered ${rupee(r.offer)}`;
   return `Requested ${timeAgo(r.createdAt)}`;
@@ -748,6 +762,7 @@ function requestPanel(it) {
         <label>Until<input type="date" name="to" min="${isoDay(0)}" value="${end}" required></label>
       </div>
       <div class="estimate" id="estimate"></div>` : ''}
+      ${qty(it) > 1 ? `<label>How many?<input type="number" name="units" min="1" max="${dated ? qty(it) : Math.max(1, unitsLeft(it))}" step="1" value="1" required><small class="muted">${dated ? `Up to ${qty(it)} units, if they’re free on your dates.` : `${unitsLeft(it)} of ${qty(it)} still available.`}</small></label>` : ''}
       ${it.type === 'sell' ? `<label>Your offer<div class="input-prefix"><span>₹</span><input type="number" name="offer" min="1" max="${it.price * 2}" step="1" value="${it.price}" required></div><small class="muted">Listed at ${rupee(it.price)} — you can offer less.</small></label>` : ''}
       <label>Pickup spot<select name="pickup">${PICKUPS.map((p) => `<option>${esc(p)}</option>`).join('')}</select></label>
       <label>Message to ${esc(getUser(it.ownerId).name.split(' ')[0])}<textarea name="message" rows="3" maxlength="400" placeholder="Say hi and why you need it…">Hi ${esc(getUser(it.ownerId).name.split(' ')[0])}! </textarea></label>
@@ -766,17 +781,21 @@ function updateEstimate(f) {
   if (!from || !to || to < from) { box.innerHTML = '<span class="err">Pick an end date after the start date.</span>'; return; }
   const days = daysBetween(from, to);
   const over = it.maxDays && days > it.maxDays;
-  let html = `${icon('calendar')}<span><b>${plural(days, 'day')}</b>`;
-  if (it.type === 'rent') html += ` × ${rupee(it.price)} = <b>${rupee(days * it.price)}</b>`;
+  const n = Math.max(1, Math.floor(+(f.elements.units ? f.elements.units.value : 1) || 1));
+  let html = `${icon('calendar')}<span><b>${plural(days, 'day')}</b>${n > 1 ? ` × <b>${n} units</b>` : ''}`;
+  if (it.type === 'rent') html += ` × ${rupee(it.price)} = <b>${rupee(days * it.price * n)}</b>`;
   else html += ' · free';
-  if (it.deposit) html += ` <span class="muted">+ ${rupee(it.deposit)} refundable deposit</span>`;
+  if (it.deposit) html += ` <span class="muted">+ ${rupee(it.deposit * n)} refundable deposit</span>`;
   html += '</span>';
   if (over) html += `<span class="err">Owner lends for max ${plural(it.maxDays, 'day')}.</span>`;
   const { peak, sample: clash } = peakLoad(it.id, from, to);
-  if (peak >= qty(it)) html += `<span class="err">${qty(it) > 1 ? `All ${qty(it)} units are booked on some of these days` : `These dates overlap a booking (${fmtDay(clash.from)} → ${fmtDay(clash.to)})`}.</span>`;
+  const free = qty(it) - peak;
+  if (free <= 0) html += `<span class="err">${qty(it) > 1 ? `All ${qty(it)} units are booked on some of these days` : `These dates overlap a booking (${fmtDay(clash.from)} → ${fmtDay(clash.to)})`}.</span>`;
+  else if (n > free) html += `<span class="err">Only ${free} of ${qty(it)} units are free on these dates.</span>`;
+  else if (qty(it) > 1) html += `<span class="muted small">${free} of ${qty(it)} units free on these dates.</span>`;
   if (from < isoDay(0)) html += '<span class="err">Start date can’t be in the past.</span>';
   box.innerHTML = html;
-  box.classList.toggle('bad', !!(over || peak >= qty(it) || from < isoDay(0)));
+  box.classList.toggle('bad', !!(over || n > free || from < isoDay(0)));
 }
 
 /* ---------- Post / edit listing ---------- */
@@ -1102,8 +1121,9 @@ function pageRequest(q, id) {
           <div class="notice ${overdue ? 'red' : ''}">${hint}</div>`}
           <dl class="facts">
             ${r.from ? `<div><dt>Dates</dt><dd>${fmtDay(r.from)} → ${fmtDay(r.to)} <span class="muted">(${plural(daysBetween(r.from, r.to), 'day')})</span></dd></div>` : ''}
+            ${units(r) > 1 ? `<div><dt>Units</dt><dd>${units(r)} of ${qty(it)}</dd></div>` : ''}
             ${r.total ? `<div><dt>Rent total</dt><dd>${rupee(r.total)}</dd></div>` : ''}
-            ${it.deposit && dated ? `<div><dt>Deposit</dt><dd>${rupee(it.deposit)} <span class="muted">refundable</span></dd></div>` : ''}
+            ${it.deposit && dated ? `<div><dt>Deposit</dt><dd>${rupee(it.deposit * units(r))} <span class="muted">refundable</span></dd></div>` : ''}
             ${r.offer != null ? `<div><dt>Offer</dt><dd>${rupee(r.offer)} <span class="muted">(listed ${rupee(it.price)})</span></dd></div>` : ''}
             <div><dt>Pickup</dt><dd>${esc(r.pickup)}</dd></div>
             <div><dt>Requested</dt><dd>${timeAgo(r.createdAt)}</dd></div>
@@ -1362,7 +1382,7 @@ const ACTIONS = {
       notify(r.requesterId, `You now have <b>${esc(it.title)}</b>. Return by ${fmtDay(r.to)}.`, '/request/' + r.id);
       toast('Marked as handed over', 'success');
     } else {
-      setReqStatus(r, 'completed'); it.sold = (it.sold || 0) + 1; syncItemStatus(it);
+      setReqStatus(r, 'completed'); it.sold = (it.sold || 0) + units(r); syncItemStatus(it);
       notify(r.requesterId, `<b>${esc(it.title)}</b> is yours! Leave ${esc(me().name.split(' ')[0])} a rating.`, '/request/' + r.id);
       if (unitsLeft(it) <= 0) {
         DB.requests.filter((x) => x.itemId === it.id && x.status === 'pending').forEach((x) => {
@@ -1459,6 +1479,9 @@ const FORMS = {
       pickup: fd.get('pickup'), message: String(fd.get('message') || '').trim(), messages: [],
       createdAt: Date.now(), updatedAt: Date.now(), history: [{ status: 'pending', at: Date.now() }],
     };
+    const askUnits = Math.floor(+(fd.get('units') || 1));
+    if (!(askUnits >= 1) || askUnits > qty(it)) return toast(`Choose between 1 and ${qty(it)} units`, 'error');
+    if (askUnits > 1) r.units = askUnits;
     if (it.type === 'lend' || it.type === 'rent') {
       r.from = fd.get('from'); r.to = fd.get('to');
       if (!r.from || !r.to || r.to < r.from) return toast('Pick a valid date range', 'error');
@@ -1466,9 +1489,12 @@ const FORMS = {
       if (it.maxDays && days > it.maxDays) return toast(`The owner lends this for at most ${plural(it.maxDays, 'day')}`, 'error');
       if (r.from < isoDay(0)) return toast('Start date can’t be in the past', 'error');
       if (r.from > isoDay(180)) return toast('You can book at most 6 months ahead', 'error');
-      if (peakLoad(it.id, r.from, r.to).peak >= qty(it)) return toast('Those dates are already booked — pick free dates', 'error');
-      if (it.type === 'rent') r.total = days * it.price;
+      const free = qty(it) - peakLoad(it.id, r.from, r.to).peak;
+      if (free <= 0) return toast('Those dates are already booked — pick free dates', 'error');
+      if (askUnits > free) return toast(`Only ${free} of ${qty(it)} units are free on those dates`, 'error');
+      if (it.type === 'rent') r.total = days * it.price * askUnits;
     } else if (unitsLeft(it) <= 0) return toast('Every unit is reserved right now — try again later', 'error');
+    else if (askUnits > unitsLeft(it)) return toast(`Only ${unitsLeft(it)} of ${qty(it)} units are still available`, 'error');
     if (it.type === 'sell') {
       r.offer = Math.round(+fd.get('offer'));
       if (!(r.offer >= 1)) return toast('Enter an offer of at least ₹1', 'error');
@@ -1476,7 +1502,7 @@ const FORMS = {
     }
     if (r.message && r.message !== `Hi ${getUser(it.ownerId).name.split(' ')[0]}!`) r.messages.push({ from: m.id, text: r.message, at: Date.now() });
     DB.requests.push(r);
-    notify(it.ownerId, `<b>${esc(m.name)}</b> wants to ${TYPES[it.type].ing} your <b>${esc(it.title)}</b>${r.offer != null ? ` for ${rupee(r.offer)}` : ''}`, '/request/' + r.id);
+    notify(it.ownerId, `<b>${esc(m.name)}</b> wants to ${TYPES[it.type].ing} ${units(r) > 1 ? `<b>${units(r)} units</b> of ` : ''}your <b>${esc(it.title)}</b>${r.offer != null ? ` for ${rupee(r.offer)}` : ''}`, '/request/' + r.id);
     saveDB(); toast('Request sent! We’ve notified the owner.', 'success'); go('/request/' + r.id);
   },
   chat: (f) => {

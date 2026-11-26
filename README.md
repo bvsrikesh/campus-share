@@ -4,7 +4,7 @@ A campus sharing marketplace where students can **lend, rent, sell or give away*
 
 **Live app:** https://campus-share-bvs.netlify.app · **Code:** https://github.com/bvsrikesh/campus-share · **Submission:** [docs/SUBMISSION.md](docs/SUBMISSION.md) · **PDF:** [docs/CampusShare_Submission.pdf](docs/CampusShare_Submission.pdf) · **Deploy guide:** [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
 
-**Tests:** 159/159 end-to-end browser checks pass. **Demo screenshots:** [docs/SUBMISSION.md#5-demo](docs/SUBMISSION.md#5-demo)
+**Tests:** 185/185 end-to-end browser checks pass. **Demo screenshots:** [docs/SUBMISSION.md#5-demo](docs/SUBMISSION.md#5-demo)
 
 ## Run it
 No install or build step. Open `index.html` in a browser (double-click works), or open the live link.
@@ -28,7 +28,7 @@ Try viewing as **Kabir Singh**: one of his cycle requests clashes with an existi
 - Dark mode, mobile bottom nav, keyboard shortcut `/` to search, `Esc` to close dialogs
 
 ## Rules the app enforces
-- **Quantity**: a listing can have several units (e.g. 2 calculators). Dates are full only when every unit is booked, and sell/giveaway items become Sold/Claimed when the last unit goes.
+- **Quantity and multi-unit requests**: a listing can have several units (e.g. 5 extension boards), and one request can ask for several ("How many?"). One student can take 2 and another the remaining 3; requests that no longer fit are blocked or auto-declined. Dates are full only when every unit is booked, rent and deposit multiply by units, and sale/giveaway items become Sold/Claimed when the last unit goes.
 - **Same item twice**: if you list something you already listed, the app offers to add the new units to the existing listing instead of creating a duplicate. The same item from different owners stays as separate listings.
 - **No double-booking**: requests for full dates are rejected, and accepting a request auto-declines pending ones that no longer fit.
 - **Every action is re-checked**: who you are and the request's current state are verified before anything changes. Old tabs, double clicks and tampered buttons can't push a request into an invalid state.
@@ -36,7 +36,7 @@ Try viewing as **Kabir Singh**: one of his cycle requests clashes with an existi
 - **Input checks**: campus-only emails, no blank names, no past dates, bookings at most 6 months ahead, price and offer limits, one open request per item per person, one rating per exchange, and HTML in text is shown as plain text.
 
 ## Tests
-The suite has 159 checks in 13 groups and runs in real Microsoft Edge:
+The suite has 185 checks in 14 groups and runs in real Microsoft Edge:
 ```
 npm install
 npm test            # all groups
