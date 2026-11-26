@@ -306,7 +306,7 @@ function renderHeader(path) {
       <div class="dropdown-profile">${avatar(m, 'md')}<div><b>${esc(m.name)}</b><small>${esc(getHostel(m.hostelId).name)} · ${esc(m.room)}</small></div></div>
       <a href="#/profile/${m.id}" class="menu-item">${icon('user')}My profile & listings</a>
       <a href="#/requests" class="menu-item">${icon('inbox')}My requests${pending ? `<span class="count">${pending}</span>` : ''}</a>
-      <a href="#/saved" class="menu-item">${icon('heart')}Saved items</a>
+      <a href="#/saved" class="menu-item">${icon('heart')}Wishlist</a>
       <button class="menu-item" data-action="theme">${icon(theme === 'dark' ? 'sun' : 'moon')}${theme === 'dark' ? 'Light' : 'Dark'} mode</button>
       <div class="menu-sep"></div>
       <button class="menu-item" data-action="switch-account">${icon('swap')}Switch demo account</button>
@@ -733,7 +733,7 @@ function requestPanel(it) {
   if (!dated && unitsLeft(it) <= 0) {
     return `<div class="card pad sticky"><div class="side-price">${priceLabel(it, true)}</div>
       <div class="notice">${icon('clock')}Reserved for someone else right now. If they back out it’ll open up again.</div>
-      <button class="btn ${me() && m.saved.includes(it.id) ? 'btn-soft' : 'btn-primary'} btn-block" data-action="fav" data-id="${it.id}">${icon('heart')}${m.saved.includes(it.id) ? 'Saved — check back later' : 'Save to check back later'}</button></div>`;
+      <button class="btn ${me() && m.saved.includes(it.id) ? 'btn-soft' : 'btn-primary'} btn-block" data-action="fav" data-id="${it.id}">${icon('heart')}${m.saved.includes(it.id) ? 'In your wishlist — check back later' : 'Add to wishlist'}</button></div>`;
   }
   const loan = it.status === 'onloan' ? DB.requests.filter((r) => r.itemId === it.id && r.status === 'active').sort((a, b) => a.to.localeCompare(b.to))[0] : null;
   const booked = bookings(it.id).filter((b) => b.from && b.to >= isoDay(0)).sort((a, b) => a.from.localeCompare(b.from));
@@ -1193,11 +1193,11 @@ function pageProfile(q, id) {
 }
 function pageSaved() {
   const m = me();
-  if (!m) return loginPrompt('to see saved items');
+  if (!m) return loginPrompt('to see your wishlist');
   const items = m.saved.map(getItem).filter((i) => i && isVisibleItem(i));
   return `<div class="container">
-    <div class="page-head"><div><h1>Saved items</h1><p class="muted">Tap the ♥ on any item to keep it here.</p></div></div>
-    ${itemGrid(items, emptyState('💜', 'Nothing saved yet', 'Save items you might need later — like that cycle for the weekend.', '<a class="btn btn-primary" href="#/browse">Browse items</a>'))}
+    <div class="page-head"><div><h1>Wishlist</h1><p class="muted">Tap the ♥ on any item to add it to your wishlist.</p></div></div>
+    ${itemGrid(items, emptyState('💜', 'Your wishlist is empty', 'Add items you might need later — like that cycle for the weekend.', '<a class="btn btn-primary" href="#/browse">Browse items</a>'))}
   </div>`;
 }
 
@@ -1290,7 +1290,7 @@ const ACTIONS = {
   fav: (el) => {
     if (needLogin()) return;
     const m = me(), id = el.dataset.id, i = m.saved.indexOf(id);
-    if (i >= 0) { m.saved.splice(i, 1); toast('Removed from saved'); } else { m.saved.push(id); toast('Saved ♥ — find it under Saved items', 'success'); }
+    if (i >= 0) { m.saved.splice(i, 1); toast('Removed from wishlist'); } else { m.saved.push(id); toast('Added to your wishlist ♥', 'success'); }
     saveDB(); render();
   },
   filter: (el) => setFilter(el.dataset.key, el.dataset.val, el.dataset.route || '/browse'),

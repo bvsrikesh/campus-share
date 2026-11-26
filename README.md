@@ -24,7 +24,7 @@ Try viewing as **Kabir Singh**: one of his cycle requests clashes with an existi
 - **Request lifecycle**: Pending → Accepted → Handed over → Returned/Completed. The borrower taps "I've returned it" and the owner confirms. Also decline and cancel, per-request chat, room number shown only after acceptance, overdue warnings, two-way ratings
 - **Wanted board**: post what you need (deadline, budget, mode), others offer help and can attach their listing, accept an offer to mark it fulfilled
 - **Hostels**: hostel directory with stats, plus per-hostel listings, wanted posts and members
-- **Accounts**: signup restricted to campus email, profiles with reviews and stats, saved items, notifications
+- **Accounts**: signup restricted to campus email, profiles with reviews and stats, wishlist, notifications
 - Dark mode, mobile bottom nav, keyboard shortcut `/` to search, `Esc` to close dialogs
 
 ## Rules the app enforces

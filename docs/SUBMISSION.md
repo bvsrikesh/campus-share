@@ -26,7 +26,13 @@ Hostel students often need things they use only a few times: a scientific calcul
 >
 > **No double-booking.** Dates count as full only when every unit is booked. Clashing requests show "Clashes with Aarav's booking" instead of Accept, and are auto-declined when another request takes their slot.
 >
-> **Full request lifecycle.** Request → Accept → Hand-over → Return, with chat, notifications, overdue warnings, a two-step return (borrower marks returned, owner confirms) and ratings on both sides.
+> **Full request lifecycle.** Request → Accept → Hand-over → Return, with overdue warnings and a two-step return (borrower marks returned, owner confirms).
+>
+> **Chat on every request.** Borrower and owner message each other inside the request to agree on time and place, with notifications for new messages.
+>
+> **Rating system.** After each completed exchange both sides rate each other (1–5 stars plus a comment), once per exchange. Ratings and reviews show on profiles, item pages and offers, which builds trust.
+>
+> **Wishlist.** Tap ♥ on any item to save it to your wishlist and come back when it's free.
 >
 > **Smart request form.** It shows already-booked dates and starts on the first free window. A live estimate shows days × units × price plus deposit. Offers on items for sale.
 >
@@ -34,17 +40,15 @@ Hostel students often need things they use only a few times: a scientific calcul
 >
 > **Hostel communities.** Items from your hostel come first, and every hostel has a page with its listings, members and stats.
 >
+> **Notifications.** A bell with an unread count for new requests, decisions, messages, offers and returns.
+>
 > **Privacy and safety.** A room number is revealed only after acceptance, and all text is escaped. Every action is re-checked, so old tabs, double clicks and forged buttons can't corrupt data.
 >
 > **Duplicate detection.** Listing something you already listed offers to add units to the existing listing instead.
 >
+> **Easy to demonstrate.** The "Viewing as" switcher lets one reviewer act as owner and borrower in one click.
+>
 > **Works everywhere.** Mobile layout with a bottom tab bar, light and dark themes, keyboard shortcuts. Opens from a link with nothing to install.
-
-**Key requirements.**
-- **No double-booking**, including items with several units.
-- **Privacy:** a room number is revealed only after a request is accepted.
-- **Mobile-friendly and accessible.**
-- **Easy to demonstrate:** a reviewer can act as both owner and borrower with no setup.
 
 **Scope and assumptions.**
 - This is a working prototype; data is stored in each visitor's browser.
@@ -134,7 +138,7 @@ PAGES
 9. Hostels directory and hostel page (stats, wanted posts, listings, members).
 10. Profile: cover, details, stats (rating, listings, lent, borrowed), listings,
     wanted posts, reviews; edit profile.
-11. Saved items, Log in (with one-click demo accounts), Sign up (campus email only).
+11. Wishlist (♥ saved items), Log in (with one-click demo accounts), Sign up (campus email only).
 
 REQUEST LIFECYCLE
 pending -> accepted (owner) -> active / handed over (owner) -> completed (owner
@@ -271,7 +275,7 @@ GROUPS
 9. Editing/deleting listings with open requests.
 10. Wanted board: validation, offers with attached listing, one offer per person,
     accept -> fulfilled, reopen, "post this search as wanted".
-11. Profile (hostel change moves listings), saved items, notifications, guest heart.
+11. Profile (hostel change moves listings), wishlist, notifications, guest heart.
 12. Filters, live search keeps focus, back/forward, "/" shortcut, theme persistence,
     reset.
 13. Mobile 390px: no horizontal overflow on 12 pages, bottom bar, filter drawer.
@@ -362,7 +366,7 @@ The suite (`tests/browser-tests.js`) drives **Microsoft Edge** and clicks real b
 | 8 | Stale tabs, wrong user, double clicks | 7 | Pass |
 | 9 | Editing/deleting listings with open requests | 13 | Pass |
 | 10 | Wanted board | 15 | Pass |
-| 11 | Profile, hostels, saved items, notifications | 9 | Pass |
+| 11 | Profile, hostels, wishlist, notifications | 9 | Pass |
 | 12 | Filters, search, navigation, theme, reset | 10 | Pass |
 | 13 | Mobile layout (390 px) | 4 | Pass |
 | 14 | Multi-unit requests: 2 of 5 + remaining 3, auto-decline, rent/deposit × units, 5-unit sale | 26 | Pass |
@@ -480,13 +484,25 @@ Each hostel has its stats, open wanted posts, listings and members.
 
 Hostel, verified badge, rating, sharing stats, listings and reviews.
 
-### 5.16 Log in with demo accounts
+### 5.16 Rating system
+
+![Rating dialog](screenshots/15b-rating.jpg)
+
+When an exchange is completed, each side rates the other once: 1–5 stars and an optional comment. Ratings appear on profiles, item pages and wanted-post offers.
+
+### 5.17 Wishlist
+
+![Wishlist](screenshots/15c-wishlist.jpg)
+
+Tap ♥ on any item to add it to the wishlist and come back when it is free.
+
+### 5.18 Log in with demo accounts
 
 ![Log in with demo accounts](screenshots/15-login.jpg)
 
 Campus-email login, plus one-click demo accounts.
 
-### 5.17 Mobile: light and dark themes
+### 5.19 Mobile: light and dark themes
 
 <p class="pair"><img src="screenshots/16-mobile-light.jpg" alt="Mobile item page, light theme" width="300"> <img src="screenshots/17-mobile-dark.jpg" alt="Mobile home page, dark theme" width="300"></p>
 

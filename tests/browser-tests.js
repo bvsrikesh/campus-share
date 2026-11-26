@@ -350,7 +350,7 @@ function check(name, cond, detail = '') { results.push({ group: current, name, o
     await nav('/hostel/h3'); check('hostel page lists moved items', await exists('a[href="#/item/i21"]'));
     await nav('/browse'); await click('#results .item-card .fav');
     check('save (♥) from browse works', (await db()).users.find((u) => u.id === 'u1').saved.length === 4);
-    await nav('/saved'); check('saved page shows saved items', (await ev(() => document.querySelectorAll('.item-card').length)) >= 3);
+    await nav('/saved'); check('wishlist page shows saved items', (await ev(() => document.querySelectorAll('.item-card').length)) >= 3);
     await click('[data-action=menu][data-menu=notif]'); await click('[data-action=notif-read-all]');
     check('mark all notifications read', (await db()).notifications.filter((n) => n.userId === 'u1').every((n) => n.read));
     await as(''); await nav('/browse'); await click('#results .item-card .fav');
